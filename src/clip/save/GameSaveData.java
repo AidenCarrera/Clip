@@ -7,6 +7,8 @@ public class GameSaveData {
     public int valueUpgradeCount;
     public int moreUpgradeCount;
 
+    public GameSaveData() {} // Needed for JSON deserialization
+
     public GameSaveData(int clips, int maxClipCount, int coloredUpgrade, int valueUpgradeCount, int moreUpgradeCount) {
         this.clips = clips;
         this.maxClipCount = maxClipCount;

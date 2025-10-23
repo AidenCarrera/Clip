@@ -5,10 +5,10 @@ import clip.core.ID;
 import clip.core.Handler;
 import clip.entities.Upgrade;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class SaveManager {
     private final String path;
@@ -19,13 +19,18 @@ public class SaveManager {
 
     // --- SAVE ---
     public void save(GameManager gameManager) {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(path), StandardCharsets.UTF_8)) {
-            writer.write(gameManager.getClips() + "\n");
-            writer.write(gameManager.getMaxClipCount() + "\n");
-            writer.write(gameManager.getColoredUpgrade() + "\n");
-            writer.write(gameManager.getValueUpgradeCount() + "\n");
-            writer.write(gameManager.getMoreUpgradeCount() + "\n");
-            System.out.println("Game saved.");
+        // Build JSON manually
+        String json = "{\n" +
+                "  \"clips\": " + gameManager.getClips() + ",\n" +
+                "  \"maxClipCount\": " + gameManager.getMaxClipCount() + ",\n" +
+                "  \"coloredUpgrade\": " + gameManager.getColoredUpgrade() + ",\n" +
+                "  \"valueUpgradeCount\": " + gameManager.getValueUpgradeCount() + ",\n" +
+                "  \"moreUpgradeCount\": " + gameManager.getMoreUpgradeCount() + "\n" +
+                "}";
+
+        try {
+            Files.write(Paths.get(path), json.getBytes(StandardCharsets.UTF_8));
+            System.out.println("Game saved as JSON.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -34,25 +39,42 @@ public class SaveManager {
     // --- LOAD ---
     public boolean load(GameManager gameManager) {
         try {
-            List<String> lines = Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8);
-            if (lines.size() < 5) return false;
+            String content = Files.readString(Paths.get(path), StandardCharsets.UTF_8);
+            content = content.replaceAll("[\\{\\}\\s\"]", ""); // remove braces, quotes, spaces
 
-            gameManager.setClips(parseOrDefault(lines.get(0)));
-            gameManager.setMaxClipCount(parseOrDefault(lines.get(1)));
-            gameManager.setColoredUpgrade(parseOrDefault(lines.get(2)));
-            gameManager.setValueUpgradeCount(parseOrDefault(lines.get(3)));
-            gameManager.setMoreUpgradeCount(parseOrDefault(lines.get(4)));
+            String[] parts = content.split(",");
+            int clips = 0, maxClipCount = 0, coloredUpgrade = 0, valueUpgradeCount = 0, moreUpgradeCount = 0;
+
+            for (String part : parts) {
+                String[] kv = part.split(":");
+                if (kv.length < 2) continue;
+                switch (kv[0]) {
+                    case "clips" -> clips = Integer.parseInt(kv[1]);
+                    case "maxClipCount" -> maxClipCount = Integer.parseInt(kv[1]);
+                    case "coloredUpgrade" -> coloredUpgrade = Integer.parseInt(kv[1]);
+                    case "valueUpgradeCount" -> valueUpgradeCount = Integer.parseInt(kv[1]);
+                    case "moreUpgradeCount" -> moreUpgradeCount = Integer.parseInt(kv[1]);
+                }
+            }
+
+            // Apply to GameManager
+            gameManager.setClips(clips);
+            gameManager.setMaxClipCount(maxClipCount);
+            gameManager.setColoredUpgrade(coloredUpgrade);
+            gameManager.setValueUpgradeCount(valueUpgradeCount);
+            gameManager.setMoreUpgradeCount(moreUpgradeCount);
 
             rebuildUpgrades(gameManager);
-
-            System.out.println("Game loaded.");
+            System.out.println("Game loaded from JSON.");
             return true;
+
         } catch (IOException e) {
             System.out.println("Save file not found. Starting new game.");
             return false;
         }
     }
 
+    // --- Rebuild upgrades in the world ---
     private void rebuildUpgrades(GameManager gameManager) {
         Handler handler = gameManager.getHandler();
 
@@ -66,13 +88,5 @@ public class SaveManager {
         // Always rebuild value and more upgrades
         handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE));
         handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE));
-    }
-
-    private int parseOrDefault(String line) {
-        try {
-            return Integer.parseInt(line.trim());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 }

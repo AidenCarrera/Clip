@@ -14,7 +14,7 @@ Thumbs.db
 *.tmp
 
 # Game save data or player-specific files
-save.txt
+/data/
 
 # Compiled files (if any)
 *.class

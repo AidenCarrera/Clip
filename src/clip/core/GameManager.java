@@ -26,7 +26,7 @@ public class GameManager {
 
     public GameManager(Handler handler) {
         this.handler = handler;
-        this.saveManager = new SaveManager("save.txt");
+        this.saveManager = new SaveManager("data/save.json");
         this.random = new Random();
         this.spawner = new Spawner(handler, random);
 
