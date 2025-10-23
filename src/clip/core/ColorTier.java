@@ -1,6 +1,7 @@
 package clip.core;
 
 public enum ColorTier {
+    NONE(0, null, null),      // No upgrade yet
     RED(100, ID.RED_PAPERCLIP, ID.RED_UPGRADE),
     GREEN(1_000, ID.GREEN_PAPERCLIP, ID.GREEN_UPGRADE),
     BLUE(5_000, ID.BLUE_PAPERCLIP, ID.BLUE_UPGRADE),
@@ -26,12 +27,11 @@ public enum ColorTier {
         int ordinal = this.ordinal();
         ColorTier[] values = ColorTier.values();
         if (ordinal < values.length - 1) return values[ordinal + 1];
-        return null; // max tier
+        return null;
     }
 
-    // Find tier by numeric value
     public static ColorTier fromValue(int value) {
-        ColorTier result = RED; // default
+        ColorTier result = NONE;
         for (ColorTier tier : ColorTier.values()) {
             if (value >= tier.value) result = tier;
         }

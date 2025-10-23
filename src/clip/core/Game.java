@@ -2,10 +2,9 @@ package clip.core;
 
 import clip.audio.SoundHandler;
 import clip.input.Mouse;
-import clip.input.MouseInput;
+import clip.ui.HUD;
 import clip.ui.Menu;
 import clip.ui.Window;
-import clip.ui.HUD;
 import clip.util.BufferedImageLoader;
 
 import javax.swing.*;
@@ -59,7 +58,13 @@ public class Game extends Canvas implements Runnable {
         // --- GameManager and Spawner ---
         gameManager = new GameManager(handler);
 
-        hud = new HUD(gameManager);
+        hud = new HUD(gameManager);   // HUD
+
+        // --- Mouse ---
+        Mouse mouse = new Mouse(0, 0, ID.MOUSE, handler, this, hud);
+        handler.addObject(mouse);
+        this.addMouseListener(mouse);
+        this.addMouseMotionListener(mouse);
 
         new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
 
@@ -71,6 +76,10 @@ public class Game extends Canvas implements Runnable {
         Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
         Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
 
+        newGameBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 2);
+        continueBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 1);
+        exitBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 0);
+
         // Set buttons invisible initially
         newGameBtn.setVisible(false);
         continueBtn.setVisible(false);
@@ -79,12 +88,6 @@ public class Game extends Canvas implements Runnable {
         handler.addObject(newGameBtn);
         handler.addObject(continueBtn);
         handler.addObject(exitBtn);
-
-        // --- Mouse input ---
-        MouseInput mouseInput = new MouseInput(handler);
-        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, this));
-        this.addMouseListener(mouseInput);
-        this.addMouseMotionListener(mouseInput);
     }
 
     // --- Game state getters/setters ---

@@ -9,7 +9,6 @@ import java.util.Random;
 public class GameManager {
     private final Handler handler;
     private final SaveManager saveManager;
-
     private final Spawner spawner;
     private final Random random;
 
@@ -20,9 +19,7 @@ public class GameManager {
 
     private ColorTier coloredUpgrade;
     private int valueUpgradeCount;
-    private int valueUpgradePrice;
     private int moreUpgradeCount;
-    private int moreUpgradePrice;
 
     public GameManager(Handler handler) {
         this.handler = handler;
@@ -34,7 +31,6 @@ public class GameManager {
     }
 
     // --- Game control ---
-
     public void startNewGame() {
         System.out.println("Game Restarted");
 
@@ -42,14 +38,12 @@ public class GameManager {
         currentClipCount = 0;
         maxClipCount = 25;
 
-        coloredUpgrade = ColorTier.RED;
+        coloredUpgrade = ColorTier.NONE; // start with no upgrade
         valueUpgradeCount = 0;
-        valueUpgradePrice = 200;
         moreUpgradeCount = 0;
-        moreUpgradePrice = 200;
 
-        // Initialize first upgrades in the game world
-        handler.addObject(new clip.entities.Upgrade(175, 50, ID.RED_UPGRADE));
+        // Add initial upgrade objects
+        handler.addObject(new clip.entities.Upgrade(175, 50, ColorTier.RED.getUpgradeID()));
         handler.addObject(new clip.entities.Upgrade(175, 145, ID.VALUE_UPGRADE));
         handler.addObject(new clip.entities.Upgrade(65, 145, ID.MORE_UPGRADE));
     }
@@ -60,22 +54,17 @@ public class GameManager {
             System.out.println("No save found — starting new game.");
             startNewGame();
         }
+        // No recalculation needed — prices are dynamic now
     }
 
     public void saveGame() {
         saveManager.save(this);
     }
 
-    public Spawner getSpawner() {
-        return spawner;
-    }
-
-    public Random getRandom() {
-        return random;
-    }
+    public Spawner getSpawner() { return spawner; }
+    public Random getRandom() { return random; }
 
     // --- Gameplay actions ---
-
     public void collectClip(GameObject clip) {
         int value = switch (clip.getID()) {
             case PAPERCLIP -> 1;
@@ -92,55 +81,59 @@ public class GameManager {
         handler.removeObject(clip);
     }
 
-    public void buyColoredUpgrade(GameObject upgrade) {
-        switch (upgrade.getID()) {
-            case RED_UPGRADE, GREEN_UPGRADE, BLUE_UPGRADE, PURPLE_UPGRADE, YELLOW_UPGRADE ->
-                    attemptColoredUpgrade(upgrade);
-            default -> {}
-        }
-    }
-
-    private void attemptColoredUpgrade(GameObject upgrade) {
+    // --- Upgrade methods ---
+    public void buyColoredUpgradeFromHUD() {
         ColorTier nextTier = coloredUpgrade.next();
-        int cost = coloredUpgrade.getValue();
-        if (clips >= cost) {
-            clips -= cost;
-            coloredUpgrade = nextTier != null ? nextTier : coloredUpgrade;
-            if (nextTier != null) handler.addObject(new clip.entities.Upgrade(175, 50, nextTier.getUpgradeID()));
-            handler.removeObject(upgrade);
+        if (nextTier != null && clips >= nextTier.getValue()) {
+            clips -= nextTier.getValue();
+            coloredUpgrade = nextTier;
+            System.out.println("Bought colored upgrade: " + nextTier);
+        } else {
+            System.out.println("Not enough clips for colored upgrade.");
         }
     }
 
-    public void buyValueUpgrade(GameObject upgrade) {
-        if (clips >= valueUpgradePrice) {
-            clips -= valueUpgradePrice;
+    public void buyValueUpgradeFromHUD() {
+        int price = getValueUpgradePrice();
+        if (clips >= price) {
+            clips -= price;
             valueUpgradeCount++;
-            valueUpgradePrice = 200 * (int)Math.pow(2, valueUpgradeCount);
-            handler.addObject(new clip.entities.Upgrade(175, 145, ID.VALUE_UPGRADE));
-            handler.removeObject(upgrade);
+            System.out.println("Bought value upgrade. New count: " + valueUpgradeCount);
+        } else {
+            System.out.println("Not enough clips for value upgrade.");
         }
     }
 
-    public void buyMoreUpgrade(GameObject upgrade) {
-        if (clips >= moreUpgradePrice) {
-            clips -= moreUpgradePrice;
+    public void buyMoreUpgradeFromHUD() {
+        int price = getMoreUpgradePrice();
+        if (clips >= price) {
+            clips -= price;
             maxClipCount++;
             moreUpgradeCount++;
-            moreUpgradePrice = 200 + 50 * (int)Math.pow(2, moreUpgradeCount);
-            handler.addObject(new clip.entities.Upgrade(65, 145, ID.MORE_UPGRADE));
-            handler.removeObject(upgrade);
+            System.out.println("Bought more upgrade. Max clips: " + maxClipCount);
+        } else {
+            System.out.println("Not enough clips for more upgrade.");
         }
     }
 
+    // --- Dynamic price calculation ---
+    public int getValueUpgradePrice() {
+        return 200 * (int)Math.pow(2, valueUpgradeCount);
+    }
+
+    public int getMoreUpgradePrice() {
+        return 200 + 50 * (int)Math.pow(2, moreUpgradeCount);
+    }
+
+    // --- Game ticking / spawning ---
     public void tick() {
-        // Spawn clips while under max limit
         while (currentClipCount < maxClipCount) {
             double P = 69, redP = 15, greenP = 7.85, blueP = 4.25, purpleP = 2.6, yellowP = 1;
             double totalWeight = P + redP + greenP + blueP + purpleP + yellowP;
 
-            // Use the GameManager's Random instance
             double clipToSpawn = random.nextDouble() * totalWeight;
-            if (clipToSpawn < yellowP && coloredUpgrade == ColorTier.YELLOW) {
+
+            if (clipToSpawn < yellowP && coloredUpgrade.ordinal() >= ColorTier.YELLOW.ordinal()) {
                 spawner.spawnClip(ID.YELLOW_PAPERCLIP);
             } else if (clipToSpawn < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal()) {
                 spawner.spawnClip(ID.PURPLE_PAPERCLIP);
@@ -158,8 +151,7 @@ public class GameManager {
         }
     }
 
-    // --- Getters and setters for saving ---
-
+    // --- Getters / setters for saving ---
     public int getClips() { return clips; }
     public void setClips(int clips) { this.clips = clips; }
 
@@ -175,12 +167,8 @@ public class GameManager {
     public int getValueUpgradeCount() { return valueUpgradeCount; }
     public void setValueUpgradeCount(int count) { this.valueUpgradeCount = count; }
 
-    public int getValueUpgradePrice() { return valueUpgradePrice; }
-
     public int getMoreUpgradeCount() { return moreUpgradeCount; }
     public void setMoreUpgradeCount(int count) { this.moreUpgradeCount = count; }
-
-    public int getMoreUpgradePrice() { return moreUpgradePrice; }
 
     public Handler getHandler() { return handler; }
 }

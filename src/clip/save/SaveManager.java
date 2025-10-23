@@ -1,9 +1,9 @@
 package clip.save;
 
-import clip.core.GameManager;
-import clip.core.ID;
-import clip.core.Handler;
 import clip.core.ColorTier;
+import clip.core.GameManager;
+import clip.core.Handler;
+import clip.core.ID;
 import clip.entities.Upgrade;
 
 import java.io.IOException;

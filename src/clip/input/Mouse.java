@@ -5,20 +5,29 @@ import clip.core.Game.STATE;
 import clip.core.GameObject;
 import clip.core.Handler;
 import clip.core.ID;
+import clip.ui.HUD;
 import clip.ui.Menu;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Mouse extends GameObject {
+public class Mouse extends GameObject implements MouseListener, MouseMotionListener {
+
     private final Handler handler;
     private final Game game;
+    private final HUD hud;
 
-    public Mouse(int x, int y, ID id, Handler handler, Game game) {
+    private int mouseX, mouseY;
+
+    public Mouse(int x, int y, ID id, Handler handler, Game game, HUD hud) {
         super(x, y, id);
         this.handler = handler;
         this.game = game;
+        this.hud = hud;
     }
 
     @Override
@@ -28,31 +37,24 @@ public class Mouse extends GameObject {
 
     @Override
     public void tick() {
-        // Update mouse position
-        x = mouseX;
-        y = mouseY;
-        x = Game.clamp(x, 0, Game.WIDTH - 416);
-        y = Game.clamp(y, 0, Game.HEIGHT - 300);
+        // Clamp and update mouse position
+        x = Game.clamp(mouseX, 0, Game.WIDTH - 416);
+        y = Game.clamp(mouseY, 0, Game.HEIGHT - 300);
 
         if (game.getGameState() == STATE.Game) {
-            handleGameInteractions();
-        } else if (game.getGameState() == STATE.Menu) {
-            handleMenuClicks();
+            // Collect paperclips automatically
+            collectPaperclips();
         }
     }
 
-    private void handleGameInteractions() {
+    private void collectPaperclips() {
         for (GameObject obj : handler.getObjects()) {
+            if (obj.getID() == null) continue;
             if (!getBounds().intersects(obj.getBounds()) || id != ID.MOUSE) continue;
 
-            // Delegate collection and upgrade logic to GameManager/Spawner
             switch (obj.getID()) {
                 case PAPERCLIP, RED_PAPERCLIP, GREEN_PAPERCLIP, BLUE_PAPERCLIP, PURPLE_PAPERCLIP, YELLOW_PAPERCLIP ->
-                        game.getGameManager().collectClip(obj); // <-- centralized
-                case RED_UPGRADE, GREEN_UPGRADE, BLUE_UPGRADE, PURPLE_UPGRADE, YELLOW_UPGRADE ->
-                        game.getGameManager().buyColoredUpgrade(obj);
-                case VALUE_UPGRADE -> game.getGameManager().buyValueUpgrade(obj);
-                case MORE_UPGRADE -> game.getGameManager().buyMoreUpgrade(obj);
+                        game.getGameManager().collectClip(obj);
                 default -> {}
             }
         }
@@ -69,15 +71,13 @@ public class Mouse extends GameObject {
 
                 switch (obj.getID()) {
                     case NEW_GAME -> {
-                        System.out.println("New Game");
                         game.setLevelImage("/images/office.png");
-                        game.setGameState(Game.STATE.Game);
+                        game.setGameState(STATE.Game);
                         game.getGameManager().startNewGame();
                     }
                     case CONTINUE -> {
-                        System.out.println("Continue");
                         game.setLevelImage("/images/office.png");
-                        game.setGameState(Game.STATE.Game);
+                        game.setGameState(STATE.Game);
                         game.getGameManager().continueGame();
                     }
                     case EXIT -> System.exit(0);
@@ -87,7 +87,6 @@ public class Mouse extends GameObject {
             }
         }
 
-        // Remove menu buttons after starting/continuing game
         if (clickedButton != null && (clickedButton.getID() == ID.NEW_GAME || clickedButton.getID() == ID.CONTINUE)) {
             List<GameObject> toRemove = new ArrayList<>();
             for (GameObject obj : handler.getObjects()) {
@@ -97,9 +96,46 @@ public class Mouse extends GameObject {
         }
     }
 
+    private void hudMouseClick() {
+        // Delegate click to HUD
+        MouseEvent e = new MouseEvent(game, 0, 0, 0, mouseX, mouseY, 1, false);
+        hud.mouseClicked(e);
+    }
+
     @Override
     public void render(Graphics g) {
-        // Optional debug rendering
+        // Optional debug cursor
         // g.fillRect(x, y, 16, 16);
+    }
+
+    // ---------------- MouseListener -----------------
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+
+        if (game.getGameState() == STATE.Game) {
+            hudMouseClick();
+        } else if (game.getGameState() == STATE.Menu) {
+            handleMenuClicks();
+        }
+    }
+
+    @Override public void mousePressed(MouseEvent e) {}
+    @Override public void mouseReleased(MouseEvent e) {}
+    @Override public void mouseEntered(MouseEvent e) {}
+    @Override public void mouseExited(MouseEvent e) {}
+
+    // ---------------- MouseMotionListener -----------------
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
     }
 }
