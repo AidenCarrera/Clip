@@ -4,14 +4,11 @@ import java.util.Random;
 
 // Manages game state, spawner, and saving/loading
 public class GameManager {
-    private final Handler handler;
-    private final Random random;
     private final SaveManager saveManager;
     private final Spawner spawner;
 
     public GameManager(Handler handler) {
-        this.handler = handler;
-        this.random = new Random();
+        Random random = new Random();
         this.spawner = new Spawner(handler, random);
         this.saveManager = new SaveManager("save.txt");
     }

@@ -5,7 +5,6 @@ import java.awt.*;
 public abstract class GameObject {
     // Creates position and ID for objects
     protected int x, y;
-    protected int width, height;
     protected ID id;
     protected int mouseX, mouseY;
     public GameObject(int x, int y, ID id) {
@@ -17,12 +16,6 @@ public abstract class GameObject {
     public abstract void render(Graphics g);
     public abstract Rectangle getBounds();
     // Methods used on objects
-    public int getX() {
-        return x;
-    }
-    public int getY() {
-        return y;
-    }
     public ID getID() {
         return id;
     }

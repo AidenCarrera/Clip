@@ -22,7 +22,7 @@ public class Paperclip extends GameObject {
     private static final Image YELLOW_PAPERCLIP = new ImageIcon(
             Objects.requireNonNull(Paperclip.class.getResource("/images/yellowPaperclip.png"))).getImage();
 
-    public Paperclip(int x, int y, ID id, Handler handler) {
+    public Paperclip(int x, int y, ID id) {
         super(x, y, id);
         Image img = getImageForID();
         width = img.getWidth(null);
@@ -51,9 +51,7 @@ public class Paperclip extends GameObject {
         };
     }
 
-    public int getWidth() {
-        return width;
-    }
+    public int getWidth() { return width; }
 
     public int getHeight() {
         return height;

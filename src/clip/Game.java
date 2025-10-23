@@ -6,7 +6,6 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.Serial;
 import java.util.Objects;
-import java.util.Random;
 
 public class Game extends Canvas implements Runnable {
 
@@ -65,6 +64,11 @@ public class Game extends Canvas implements Runnable {
         Menu newGameBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME);
         Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
         Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
+
+        // Set buttons invisible initially
+        newGameBtn.setVisible(false);
+        continueBtn.setVisible(false);
+        exitBtn.setVisible(false);
 
         handler.addObject(newGameBtn);
         handler.addObject(continueBtn);

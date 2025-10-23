@@ -1,16 +1,10 @@
 package clip;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.List;
 import java.util.Random;
 
 public class Spawner {
     private final Handler handler;
     private final Random random;
-
-    private final String path = "save.txt";
 
     private int clips;
     private int currentClipCount;
@@ -45,8 +39,7 @@ public class Spawner {
         handler.addObject(new Paperclip(
                 random.nextInt(Game.WIDTH - 34 - 700) + 250,
                 random.nextInt(Game.HEIGHT - 100 - 500) + 150,
-                id,
-                handler
+                id
         ));
         addClipCount();
     }
@@ -98,15 +91,4 @@ public class Spawner {
     public void addMoreUpgradeCount() { moreUpgradeCount++; }
     public void setMoreUpgradeCount(int count) { this.moreUpgradeCount = count; }
 
-    // --- Game control ---
-    public void newGame() {
-        System.out.println("Game Restarted");
-        clips = 0;
-        currentClipCount = 0;
-        maxClipCount = 25;
-        coloredUpgrade = 100;
-        addColoredUpgrade(ID.RED_UPGRADE, 100);
-        addValueUpgrade();
-        addMoreUpgrade();
-    }
 }

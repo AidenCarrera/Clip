@@ -4,9 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Serial;
 import java.util.Objects;
 
 public class Window extends Canvas {
+    @Serial
     private static final long serialVersionUID = -240840600533728354L;
 
     public Window(int width, int height, String title, Game game) {
