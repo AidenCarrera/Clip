@@ -68,7 +68,7 @@ public class Spawner {
 
     // --- Colored upgrade ---
     public void addColoredUpgrade(ID id, int price) {
-        handler.addObject(new Upgrade(175, 50, id, handler));
+        handler.addObject(new Upgrade(175, 50, id));
         coloredUpgrade = price;
     }
 
@@ -77,7 +77,7 @@ public class Spawner {
 
     // --- Value upgrade ---
     public void addValueUpgrade() {
-        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE, handler));
+        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE));
         valueUpgradePrice = (int) (200 * Math.pow(2, valueUpgradeCount));
     }
 
@@ -87,7 +87,7 @@ public class Spawner {
 
     // --- More upgrade ---
     public void addMoreUpgrade() {
-        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE, handler));
+        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE));
         moreUpgradePrice = (int) (200 + 50 * Math.pow(2, moreUpgradeCount));
     }
 
