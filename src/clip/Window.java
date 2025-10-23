@@ -16,10 +16,10 @@ public class Window extends Canvas {
         frame.setLocationRelativeTo(null);
         try {
             // Sets icon of Window to osososos
-            ImageIcon image = new ImageIcon(getClass().getResource("assets/images/oso.jpg"));
+            ImageIcon image = new ImageIcon(getClass().getResource("/images/oso.png"));
             frame.setIconImage(image.getImage());
         } catch (Exception e) {
-            System.out.println("Error loading oso.jpg");
+            System.out.println("Error loading oso.png");
         }
         frame.add(game);
         frame.setVisible(true);

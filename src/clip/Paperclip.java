@@ -2,55 +2,58 @@ package clip;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class Paperclip extends GameObject {
+
     private int width, height;
-    private Image paperclip = new ImageIcon(getClass().getResource("/images/paperclip.png")).getImage();
-    private Image redPaperclip = new ImageIcon(getClass().getResource("/images/redPaperclip.png")).getImage();
-    private Image greenPaperclip = new ImageIcon(getClass().getResource("/images/greenPaperclip.png")).getImage();
-    private Image bluePaperclip = new ImageIcon(getClass().getResource("/images/bluePaperclip.png")).getImage();
-    private Image purplePaperclip = new ImageIcon(getClass().getResource("/images/purplePaperclip.png")).getImage();
-    private Image yellowPaperclip = new ImageIcon(getClass().getResource("/images/yellowPaperclip.png")).getImage();
+
+    private static final Image PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/paperclip.png"))).getImage();
+    private static final Image RED_PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/redPaperclip.png"))).getImage();
+    private static final Image GREEN_PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/greenPaperclip.png"))).getImage();
+    private static final Image BLUE_PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/bluePaperclip.png"))).getImage();
+    private static final Image PURPLE_PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/purplePaperclip.png"))).getImage();
+    private static final Image YELLOW_PAPERCLIP = new ImageIcon(
+            Objects.requireNonNull(Paperclip.class.getResource("/images/yellowPaperclip.png"))).getImage();
 
     public Paperclip(int x, int y, ID id, Handler handler) {
-        super(x,y,id);
-        // Gets image dimensions and stores as width and height
-        width = paperclip.getWidth(null);
-        height = paperclip.getHeight(null);
+        super(x, y, id);
+        Image img = getImageForID();
+        width = img.getWidth(null);
+        height = img.getHeight(null);
     }
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
+
     public void tick() {}
+
     public void render(Graphics g) {
-        switch (id) {
-            case PAPERCLIP:
-                // Render rectangle for debug
-                // g.drawRect(x, y, width, height);
-                g.drawImage(paperclip, x, y, null);
-                break;
-            case RED_PAPERCLIP:
-                g.drawImage(redPaperclip, x, y, null);
-                break;
-            case GREEN_PAPERCLIP:
-                g.drawImage(greenPaperclip, x, y, null);
-                break;
-            case BLUE_PAPERCLIP:
-                g.drawImage(bluePaperclip, x, y, null);
-                break;
-            case PURPLE_PAPERCLIP:
-                g.drawImage(purplePaperclip, x, y, null);
-                break;
-            case YELLOW_PAPERCLIP:
-                g.drawImage(yellowPaperclip, x, y, null);
-                break;
-            default:
-                break;
-        }
+        g.drawImage(getImageForID(), x, y, null);
     }
+
+    private Image getImageForID() {
+        return switch (id) {
+            case PAPERCLIP -> PAPERCLIP;
+            case RED_PAPERCLIP -> RED_PAPERCLIP;
+            case GREEN_PAPERCLIP -> GREEN_PAPERCLIP;
+            case BLUE_PAPERCLIP -> BLUE_PAPERCLIP;
+            case PURPLE_PAPERCLIP -> PURPLE_PAPERCLIP;
+            case YELLOW_PAPERCLIP -> YELLOW_PAPERCLIP;
+            default -> PAPERCLIP;
+        };
+    }
+
     public int getWidth() {
         return width;
     }
+
     public int getHeight() {
         return height;
     }
