@@ -16,7 +16,7 @@ public class MouseInput implements MouseListener, MouseMotionListener {
         int mouseY = e.getY();
         for (int i = 0; i < handler.objects.size(); i++) {
             GameObject tempObject = handler.objects.get(i);
-            if (tempObject.getID() == ID.Mouse) {
+            if (tempObject.getID() == ID.MOUSE) {
                 // Sets hitbox to Mouse position
                 tempObject.setMouseX(mouseX);
                 tempObject.setMouseY(mouseY);
@@ -29,7 +29,7 @@ public class MouseInput implements MouseListener, MouseMotionListener {
         int mouseY = e.getY();
         for (int i = 0; i < handler.objects.size(); i++) {
             GameObject tempObject = handler.objects.get(i);
-            if (tempObject.getID() == ID.Mouse) {
+            if (tempObject.getID() == ID.MOUSE) {
                 tempObject.setMouseX(mouseX);
                 tempObject.setMouseY(mouseY);
             }
@@ -39,7 +39,7 @@ public class MouseInput implements MouseListener, MouseMotionListener {
     public void mouseReleased(MouseEvent e) {
         for (int i = 0; i < handler.objects.size(); i++) {
             GameObject tempObject = handler.objects.get(i);
-            if (tempObject.getID() == ID.Mouse) {
+            if (tempObject.getID() == ID.MOUSE) {
                 // Moves Hitbox out of Range
                 tempObject.setMouseX(0);
                 tempObject.setMouseY(0);

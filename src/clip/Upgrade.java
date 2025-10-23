@@ -26,25 +26,25 @@ public class Upgrade extends GameObject {
     }
     public void render(Graphics g) {
         switch (id) {
-            case RedUpgrade:
+            case RED_UPGRADE:
                 g.drawImage(redUpgrade, x, y, null);
                 break;
-            case BlueUpgrade:
+            case BLUE_UPGRADE:
                 g.drawImage(blueUpgrade, x, y, null);
                 break;
-            case GreenUpgrade:
+            case GREEN_UPGRADE:
                 g.drawImage(greenUpgrade, x, y, null);
                 break;
-            case PurpleUpgrade:
+            case PURPLE_UPGRADE:
                 g.drawImage(purpleUpgrade, x, y, null);
                 break;
-            case YellowUpgrade:
+            case YELLOW_UPGRADE:
                 g.drawImage(yellowUpgrade, x, y, null);
                 break;
-            case ValueUpgrade:
+            case VALUE_UPGRADE:
                 g.drawImage(valueUpgrade, x, y, null);
                 break;
-            case MoreUpgrade:
+            case MORE_UPGRADE:
                 g.drawImage(moreUpgrade, x, y, null);
                 break;
             default:

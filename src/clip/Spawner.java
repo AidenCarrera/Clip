@@ -31,17 +31,17 @@ public class Spawner {
             double totalWeight = P + redP + greenP + blueP + purpleP + yellowP;
             double clipToSpawn = random.nextDouble() * totalWeight;
             if (clipToSpawn < yellowP && getColoredUpgrade() == 100000) {
-                createPaperclip(ID.YellowPaperclip);
+                createPaperclip(ID.YELLOW_PAPERCLIP);
             } else if (clipToSpawn < yellowP + purpleP && getColoredUpgrade() >= 50000) {
-                createPaperclip(ID.PurplePaperclip);
+                createPaperclip(ID.PURPLE_PAPERCLIP);
             } else if (clipToSpawn < yellowP + purpleP + blueP && getColoredUpgrade() >= 10000) {
-                createPaperclip(ID.BluePaperclip);
+                createPaperclip(ID.BLUE_PAPERCLIP);
             } else if (clipToSpawn < yellowP + purpleP + blueP + greenP && getColoredUpgrade() >= 5000) {
-                createPaperclip(ID.GreenPaperclip);
+                createPaperclip(ID.GREEN_PAPERCLIP);
             } else if (clipToSpawn < yellowP + purpleP + blueP + greenP + redP && getColoredUpgrade() >= 1000) {
-                createPaperclip(ID.RedPaperclip);
+                createPaperclip(ID.RED_PAPERCLIP);
             } else {
-                createPaperclip(ID.Paperclip);
+                createPaperclip(ID.PAPERCLIP);
             }
         }
     }
@@ -99,7 +99,7 @@ public class Spawner {
     }
     // Adds ValueUpgrade and sets Price
     public void addValueUpgrade() {
-        handler.addObject(new Upgrade(175, 145, ID.ValueUpgrade, handler));
+        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE, handler));
         setValueUpgradePrice((int) (200 * Math.pow(2, getValueUpgradeCount())));
     }
     public int getValueUpgradePrice() {
@@ -119,7 +119,7 @@ public class Spawner {
     }
     // Adds MoreUpgrade and sets Price
     public void addMoreUpgrade() {
-        handler.addObject(new Upgrade(65, 145, ID.MoreUpgrade, handler));
+        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE, handler));
         setMoreUpradePrice((int) (200 + 50 * Math.pow(2, getMoreUpgradeCount())));
     }
     public int getMoreUpgradePrice() {
@@ -144,7 +144,7 @@ public class Spawner {
         setCurrentClipCount(0);
         setMaxClipCount(25);
         setColoredUpgrade(100);
-        addColoredUpgrade(ID.RedUpgrade, 100);
+        addColoredUpgrade(ID.RED_UPGRADE, 100);
         addValueUpgrade();
         addMoreUpgrade();
     }
@@ -155,19 +155,19 @@ public class Spawner {
         setColoredUpgrade(getSavedColoredUpgrade());
         int upgrades = getSavedColoredUpgrade();
         if (upgrades == 100) {
-            addColoredUpgrade(ID.RedUpgrade, 100);
+            addColoredUpgrade(ID.RED_UPGRADE, 100);
         }
         else if(upgrades == 1000) {
-            addColoredUpgrade(ID.GreenUpgrade, 1000);
+            addColoredUpgrade(ID.GREEN_UPGRADE, 1000);
         }
         else if (upgrades == 5000) {
-            addColoredUpgrade(ID.BlueUpgrade, 5000);
+            addColoredUpgrade(ID.BLUE_UPGRADE, 5000);
         }
         else if (upgrades == 10000) {
-            addColoredUpgrade(ID.PurpleUpgrade, 10000);
+            addColoredUpgrade(ID.PURPLE_UPGRADE, 10000);
         }
         else if (upgrades == 50000) {
-            addColoredUpgrade(ID.YellowUpgrade, 50000);
+            addColoredUpgrade(ID.YELLOW_UPGRADE, 50000);
         }
         setValueUpgradeCount(getSavedValueUpgrade());
         addValueUpgrade();

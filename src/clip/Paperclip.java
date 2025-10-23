@@ -24,24 +24,24 @@ public class Paperclip extends GameObject {
     public void tick() {}
     public void render(Graphics g) {
         switch (id) {
-            case Paperclip:
+            case PAPERCLIP:
                 // Render rectangle for debug
                 // g.drawRect(x, y, width, height);
                 g.drawImage(paperclip, x, y, null);
                 break;
-            case RedPaperclip:
+            case RED_PAPERCLIP:
                 g.drawImage(redPaperclip, x, y, null);
                 break;
-            case GreenPaperclip:
+            case GREEN_PAPERCLIP:
                 g.drawImage(greenPaperclip, x, y, null);
                 break;
-            case BluePaperclip:
+            case BLUE_PAPERCLIP:
                 g.drawImage(bluePaperclip, x, y, null);
                 break;
-            case PurplePaperclip:
+            case PURPLE_PAPERCLIP:
                 g.drawImage(purplePaperclip, x, y, null);
                 break;
-            case YellowPaperclip:
+            case YELLOW_PAPERCLIP:
                 g.drawImage(yellowPaperclip, x, y, null);
                 break;
             default:

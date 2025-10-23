@@ -58,16 +58,16 @@ public class Game extends Canvas implements Runnable {
 
         dog = loader.loadImage("/images/dog.png");
 
-        Menu newGame = new Menu(1180, 1105, ID.NewGame, handler);
-        Menu continueGame = new Menu(1180, 1222, ID.Continue, handler);
-        Menu exitGame = new Menu(1180, 1305, ID.Exit, handler);
+        Menu newGame = new Menu(1180, 1105, ID.NEW_GAME, handler);
+        Menu continueGame = new Menu(1180, 1222, ID.CONTINUE, handler);
+        Menu exitGame = new Menu(1180, 1305, ID.EXIT, handler);
 
         handler.addObject(newGame);
         handler.addObject(continueGame);
         handler.addObject(exitGame);
 
         MouseInput mouseInput = new MouseInput(handler);
-        handler.addObject(new Mouse(0, 0, ID.Mouse, handler, spawner, loader, this));
+        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, spawner, loader, this));
         this.addMouseListener(mouseInput);
         this.addMouseMotionListener(mouseInput);
     }
