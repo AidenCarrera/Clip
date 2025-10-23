@@ -58,9 +58,14 @@ public class Game extends Canvas implements Runnable {
 
         dog = loader.loadImage("/images/dog.png");
 
-        Menu newGame = new Menu(1180, 1105, ID.NEW_GAME, handler);
-        Menu continueGame = new Menu(1180, 1222, ID.CONTINUE, handler);
-        Menu exitGame = new Menu(1180, 1305, ID.EXIT, handler);
+        // Example positions near the bottom, percentages from bottom
+        Menu newGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME);
+        Menu continueGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
+        Menu exitGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
+
+        newGame.setVisible(false);
+        continueGame.setVisible(false);
+        exitGame.setVisible(false);
 
         handler.addObject(newGame);
         handler.addObject(continueGame);
@@ -150,6 +155,17 @@ public class Game extends Canvas implements Runnable {
 
     private void tick() {
         handler.tick();
+
+        // Update menu button positions if in Menu state
+        if (gameState == STATE.Menu) {
+            int buttonIndex = 2;
+            for (GameObject obj : handler.getObjects()) {
+                if (obj instanceof Menu menuButton) {
+                    menuButton.updatePosition(getWidth(), getHeight(), buttonIndex--);
+                }
+            }
+        }
+
         if (gameState == STATE.Game) {
             spawner.tick();
             hud.tick();
