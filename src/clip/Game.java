@@ -4,11 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Random;
 
 public class Game extends Canvas implements Runnable {
 
+    @Serial
     private static final long serialVersionUID = 1550691097823471818L;
     public static final int WIDTH = 2560;
     public static final int HEIGHT = 1440;
@@ -20,9 +22,7 @@ public class Game extends Canvas implements Runnable {
     private final BufferedImageLoader loader;
     private final Handler handler;
     private final HUD hud;
-    private final Random random;
     private final Spawner spawner;
-    private final Menu newGame, continueGame, exitGame;
 
     private BufferedImage levelImage = null;
     private final BufferedImage dog;
@@ -33,7 +33,7 @@ public class Game extends Canvas implements Runnable {
 
     private STATE gameState = STATE.Menu;
 
-    public static void main(String[] args) {
+    static void main() {
         new Game();
     }
 
@@ -47,7 +47,7 @@ public class Game extends Canvas implements Runnable {
         ).getImage();
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "Cursor"));
 
-        random = new Random();
+        Random random = new Random();
         handler = new Handler();
         spawner = new Spawner(handler, random);
         hud = new HUD(spawner);
@@ -58,9 +58,9 @@ public class Game extends Canvas implements Runnable {
 
         dog = loader.loadImage("/images/dog.png");
 
-        newGame = new Menu(1180, 1105, ID.NewGame, handler);
-        continueGame = new Menu(1180, 1222, ID.Continue, handler);
-        exitGame = new Menu(1180, 1305, ID.Exit, handler);
+        Menu newGame = new Menu(1180, 1105, ID.NewGame, handler);
+        Menu continueGame = new Menu(1180, 1222, ID.Continue, handler);
+        Menu exitGame = new Menu(1180, 1305, ID.Exit, handler);
 
         handler.addObject(newGame);
         handler.addObject(continueGame);
@@ -108,7 +108,7 @@ public class Game extends Canvas implements Runnable {
         double unprocessedTime = 0;
         double frameTime = 0;
         int frames = 0;
-        int fps = 0;
+        int fps;
 
         while (running) {
             render = false;
@@ -175,11 +175,6 @@ public class Game extends Canvas implements Runnable {
         handler.render(g);
         g.dispose();
         bs.show();
-    }
-
-    // Clamp a value to a minimum
-    public static int clamp(int var, int min) {
-        return Math.max(var, min);
     }
 
     // Clamp a value between min and max
