@@ -2,6 +2,8 @@ package clip;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Objects;
 
 public class Window extends Canvas {
@@ -18,7 +20,18 @@ public class Window extends Canvas {
         frame.setPreferredSize(new Dimension(width, height));
         frame.setMinimumSize(new Dimension(width / 2, height / 2));
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // --- Window close handling ---
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // prevent immediate exit
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Save game before exit
+                game.getGameManager().saveGame();
+                System.out.println("Game saved on window close.");
+                System.exit(0);
+            }
+        });
+
         frame.setResizable(true);
         frame.setLocationRelativeTo(null);
 
