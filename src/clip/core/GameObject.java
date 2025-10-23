@@ -1,4 +1,4 @@
-package clip;
+package clip.core;
 
 import java.awt.*;
 

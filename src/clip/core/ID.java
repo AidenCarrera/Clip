@@ -1,4 +1,4 @@
-package clip;
+package clip.core;
 
 public enum ID {
     // Mouse and generic objects

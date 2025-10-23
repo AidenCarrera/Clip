@@ -1,4 +1,7 @@
-package clip;
+package clip.entities;
+
+import clip.core.GameObject;
+import clip.core.ID;
 
 import javax.swing.*;
 import java.awt.*;

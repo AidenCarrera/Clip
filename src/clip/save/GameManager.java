@@ -1,4 +1,8 @@
-package clip;
+package clip.save;
+
+import clip.entities.Spawner;
+import clip.core.Handler;
+import clip.core.ID;
 
 import java.util.Random;
 

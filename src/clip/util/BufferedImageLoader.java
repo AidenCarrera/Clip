@@ -1,4 +1,4 @@
-package clip;
+package clip.util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

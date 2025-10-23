@@ -1,4 +1,4 @@
-package clip;
+package clip.audio;
 
 import javax.sound.sampled.*;
 import java.io.File;

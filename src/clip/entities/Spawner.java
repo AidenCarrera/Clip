@@ -1,4 +1,8 @@
-package clip;
+package clip.entities;
+
+import clip.core.Game;
+import clip.core.Handler;
+import clip.core.ID;
 
 import java.util.Random;
 

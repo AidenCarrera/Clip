@@ -1,4 +1,7 @@
-package clip;
+package clip.save;
+
+import clip.entities.Spawner;
+import clip.core.ID;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

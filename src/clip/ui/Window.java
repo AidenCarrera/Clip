@@ -1,4 +1,6 @@
-package clip;
+package clip.ui;
+
+import clip.core.Game;
 
 import javax.swing.*;
 import java.awt.*;

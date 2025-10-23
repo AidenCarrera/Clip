@@ -1,4 +1,14 @@
-package clip;
+package clip.core;
+
+import clip.audio.SoundHandler;
+import clip.entities.Spawner;
+import clip.input.Mouse;
+import clip.input.MouseInput;
+import clip.save.GameManager;
+import clip.ui.Menu;
+import clip.ui.Window;
+import clip.ui.HUD;
+import clip.util.BufferedImageLoader;
 
 import javax.swing.*;
 import java.awt.*;

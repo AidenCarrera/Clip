@@ -1,4 +1,7 @@
-package clip;
+package clip.ui;
+
+import clip.core.GameObject;
+import clip.core.ID;
 
 import java.awt.*;
 

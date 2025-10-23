@@ -1,4 +1,4 @@
-package clip;
+package clip.save;
 
 public class GameSaveData {
     public int clips;

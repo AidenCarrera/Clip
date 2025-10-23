@@ -1,6 +1,12 @@
-package clip;
+package clip.input;
 
-import clip.Game.STATE;
+import clip.core.Game;
+import clip.core.Game.STATE;
+import clip.core.GameObject;
+import clip.core.Handler;
+import clip.core.ID;
+import clip.entities.Spawner;
+import clip.ui.Menu;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -101,7 +107,7 @@ public class Mouse extends GameObject {
 
         // Check actual mouse coordinates
         for (GameObject obj : handler.getObjects()) {
-            if (!(obj instanceof Menu)) continue;
+            if (!(obj instanceof clip.ui.Menu)) continue;
 
             Rectangle bounds = obj.getBounds();
             if (bounds.contains(mouseX, mouseY)) {

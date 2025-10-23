@@ -1,4 +1,6 @@
-package clip;
+package clip.input;
+
+import clip.core.Handler;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
