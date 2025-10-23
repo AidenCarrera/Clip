@@ -6,7 +6,8 @@ import java.util.Objects;
 
 public class Paperclip extends GameObject {
 
-    private int width, height;
+    private final int width;
+    private final int height;
 
     private static final Image PAPERCLIP = new ImageIcon(
             Objects.requireNonNull(Paperclip.class.getResource("/images/paperclip.png"))).getImage();

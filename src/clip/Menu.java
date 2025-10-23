@@ -3,9 +3,9 @@ package clip;
 import java.awt.*;
 
 public class Menu extends GameObject {
-    private float widthPercent, heightPercent;       // size as % of window
-    private float bottomOffsetPercent;               // distance from bottom of window
-    private float spacingPercent;                    // vertical spacing between buttons
+    private final float widthPercent, heightPercent;       // size as % of window
+    private final float bottomOffsetPercent;               // distance from bottom of window
+    private final float spacingPercent;                    // vertical spacing between buttons
     private int currentWidth, currentHeight;         // actual pixel size after scaling
     private boolean visible = true;
 
@@ -74,6 +74,4 @@ public class Menu extends GameObject {
         g.drawString(text, textX, textY);
     }
 
-    public int getWidth() { return currentWidth; }
-    public int getHeight() { return currentHeight; }
 }

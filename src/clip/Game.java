@@ -58,7 +58,7 @@ public class Game extends Canvas implements Runnable {
 
         new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
 
-        SoundHandler.RunMusic();
+        SoundHandler.runMusic();
         dog = loader.loadImage("/images/dog.png");
 
         // --- Menu buttons ---
@@ -88,6 +88,9 @@ public class Game extends Canvas implements Runnable {
 
 
     // --- Game loop ---
+    private double autoSaveTimer = 0;                     // Tracks time for periodic auto-save
+    private static final double AUTO_SAVE_INTERVAL = 15; // Auto-save interval in seconds
+
     public synchronized void start() {
         if (running) return;
         running = true;
@@ -134,7 +137,15 @@ public class Game extends Canvas implements Runnable {
                     frames = 0;
                     System.out.println(fps + " FPS");
 
-                    if (gameState == STATE.Game) gameManager.saveGame();
+                    // --- Auto-save every interval ---
+                    if (gameState == STATE.Game) {
+                        autoSaveTimer += 1.0; // increment roughly every second
+                        if (autoSaveTimer >= AUTO_SAVE_INTERVAL) {
+                            gameManager.saveGame();
+                            autoSaveTimer = 0;
+                            System.out.println("Auto-saved game.");
+                        }
+                    }
                 }
             }
 
@@ -144,6 +155,12 @@ public class Game extends Canvas implements Runnable {
             } else {
                 try { Thread.sleep(1); } catch (InterruptedException ignored) {}
             }
+        }
+
+        // Save on exit
+        if (gameState == STATE.Game) {
+            gameManager.saveGame();
+            System.out.println("Game saved on exit.");
         }
 
         SoundHandler.close();

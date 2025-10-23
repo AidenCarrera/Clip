@@ -2,6 +2,7 @@ package clip;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class Window extends Canvas {
     private static final long serialVersionUID = -240840600533728354L;
@@ -22,7 +23,7 @@ public class Window extends Canvas {
         frame.setLocationRelativeTo(null);
 
         try {
-            ImageIcon image = new ImageIcon(getClass().getResource("/images/oso.png"));
+            ImageIcon image = new ImageIcon(Objects.requireNonNull(getClass().getResource("/images/oso.png")));
             frame.setIconImage(image.getImage());
         } catch (Exception e) {
             System.out.println("Error loading oso.png");
