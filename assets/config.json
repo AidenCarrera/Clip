@@ -1,0 +1,22 @@
+{
+  "game": {
+    "startClips": 0,
+    "maxClipCount": 25,
+    "coloredUpgradeStart": 100,
+    "autoSaveIntervalSeconds": 15
+  },
+  "upgrades": {
+    "redUpgradeCost": 100,
+    "greenUpgradeCost": 500,
+    "blueUpgradeCost": 1000
+  },
+  "audio": {
+    "musicVolume": 0.3,
+    "soundEffectsVolume": 0.7
+  },
+  "display": {
+    "width": 2560,
+    "height": 1440,
+    "fullscreen": true
+  }
+}

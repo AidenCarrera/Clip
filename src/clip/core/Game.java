@@ -1,10 +1,8 @@
 package clip.core;
 
 import clip.audio.SoundHandler;
-import clip.entities.Spawner;
 import clip.input.Mouse;
 import clip.input.MouseInput;
-import clip.save.GameManager;
 import clip.ui.Menu;
 import clip.ui.Window;
 import clip.ui.HUD;
@@ -32,7 +30,6 @@ public class Game extends Canvas implements Runnable {
     private final Handler handler;
     private final HUD hud;
     private final GameManager gameManager;
-    private final Spawner spawner;
 
     private BufferedImage levelImage = null;
     private final BufferedImage dog;
@@ -61,9 +58,8 @@ public class Game extends Canvas implements Runnable {
 
         // --- GameManager and Spawner ---
         gameManager = new GameManager(handler);
-        spawner = gameManager.getSpawner();
 
-        hud = new HUD(spawner);
+        hud = new HUD(gameManager);
 
         new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
 
@@ -86,7 +82,7 @@ public class Game extends Canvas implements Runnable {
 
         // --- Mouse input ---
         MouseInput mouseInput = new MouseInput(handler);
-        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, spawner, this));
+        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, this));
         this.addMouseListener(mouseInput);
         this.addMouseMotionListener(mouseInput);
     }
@@ -196,7 +192,7 @@ public class Game extends Canvas implements Runnable {
 
         // Tick game logic
         if (gameState == STATE.Game) {
-            spawner.tick();
+            gameManager.tick();
             hud.tick();
         }
     }
