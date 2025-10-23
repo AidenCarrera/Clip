@@ -67,7 +67,7 @@ public class Game extends Canvas implements Runnable {
         handler.addObject(exitGame);
 
         MouseInput mouseInput = new MouseInput(handler);
-        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, spawner, loader, this));
+        handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, spawner, this));
         this.addMouseListener(mouseInput);
         this.addMouseMotionListener(mouseInput);
     }

@@ -3,188 +3,151 @@ package clip;
 import clip.Game.STATE;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Mouse extends GameObject {
-    private Handler handler;
-    private Spawner spawner;
-    private BufferedImageLoader loader;
-    private Game game;
-    private Menu newGame, continueGame, exitGame;
-    public Mouse(int x, int y, ID id, Handler handler, Spawner spawner, BufferedImageLoader loader, Game game) {
+    private final Handler handler;
+    private final Spawner spawner;
+    private final Game game;
+
+    public Mouse(int x, int y, ID id, Handler handler, Spawner spawner, Game game) {
         super(x, y, id);
         this.handler = handler;
         this.spawner = spawner;
         this.game = game;
-        this.loader = loader;
     }
+
+    @Override
     public Rectangle getBounds() {
-        // Creates a hitbox for the mouse
         return new Rectangle(x, y, 16, 16);
     }
+
+    @Override
     public void tick() {
+        // Update mouse position
         x = mouseX;
         y = mouseY;
         x = Game.clamp(x, 0, Game.WIDTH - 416);
         y = Game.clamp(y, 0, Game.HEIGHT - 300);
-        collision();
+
+        if (game.getGameState() == STATE.Game) {
+            handleGameCollisions();
+        } else if (game.getGameState() == STATE.Menu) {
+            handleMenuClicks();
+        }
     }
-    // Detects if the Mouse collides with Paperclips, Upgrades, or Menu buttons
-    private void collision() {
-        for(int i = 0; i < handler.objects.size(); i++) {
-            GameObject tempObject = handler.objects.get(i);
-            if(tempObject.getID().equals(ID.PAPERCLIP)) {
-                if(getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(1 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
+
+    private void handleGameCollisions() {
+        for (GameObject obj : handler.getObjects()) {
+            if (!getBounds().intersects(obj.getBounds()) || id != ID.MOUSE) continue;
+
+            switch (obj.getID()) {
+                case PAPERCLIP -> collectClip(obj, 1);
+                case RED_PAPERCLIP -> collectClip(obj, 5);
+                case GREEN_PAPERCLIP -> collectClip(obj, 25);
+                case BLUE_PAPERCLIP -> collectClip(obj, 100);
+                case PURPLE_PAPERCLIP -> collectClip(obj, 1000);
+                case YELLOW_PAPERCLIP -> collectClip(obj, 10000);
+                case RED_UPGRADE -> buyColoredUpgrade(obj, 100, ID.GREEN_UPGRADE, 1000);
+                case GREEN_UPGRADE -> buyColoredUpgrade(obj, 1000, ID.BLUE_UPGRADE, 5000);
+                case BLUE_UPGRADE -> buyColoredUpgrade(obj, 5000, ID.PURPLE_UPGRADE, 10000);
+                case PURPLE_UPGRADE -> buyColoredUpgrade(obj, 10000, ID.YELLOW_UPGRADE, 50000);
+                case YELLOW_UPGRADE -> buyColoredUpgrade(obj, 50000, null, 100000);
+                case VALUE_UPGRADE -> buyValueUpgrade(obj);
+                case MORE_UPGRADE -> buyMoreUpgrade(obj);
+                default -> {}
             }
-            if (tempObject.getID().equals(ID.RED_PAPERCLIP)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(5 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
-            }
-            if (tempObject.getID().equals(ID.GREEN_PAPERCLIP)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(25 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
-            }
-            if (tempObject.getID().equals(ID.BLUE_PAPERCLIP)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(100 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
-            }
-            if (tempObject.getID().equals(ID.PURPLE_PAPERCLIP)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(1000 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
-            }
-            if (tempObject.getID().equals(ID.YELLOW_PAPERCLIP)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    handler.removeObject(tempObject);
-                    spawner.addClips(10000 * (spawner.getValueUpgradeCount() + 1));
-                    spawner.lowerClipCount();
-                }
-            }
-            if (tempObject.getID().equals(ID.RED_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if(spawner.getClips() >= 100) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(100);
-                        spawner.addColoredUpgrade(ID.GREEN_UPGRADE, 1000);
-                    } /* else {
-                        System.out.println("Not enough Clips: " + 100);
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.GREEN_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= 1000) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(1000);
-                        spawner.addColoredUpgrade(ID.BLUE_UPGRADE, 5000);
-                    } /* else {
-                        System.out.println("Not enough Clips: " + 1000);
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.BLUE_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= 5000) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(5000);
-                        spawner.addColoredUpgrade(ID.PURPLE_UPGRADE, 10000);
-                    } /* else {
-                        System.out.println("Not enough Clips: " + 5000);
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.PURPLE_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= 10000) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(10000);
-                        spawner.addColoredUpgrade(ID.YELLOW_UPGRADE, 50000);
-                    } /* else {
-                        System.out.println("Not enough Clips: " + 10000);
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.YELLOW_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= 50000) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(50000);
-                        spawner.setColoredUpgrade(100000);
-                    } /* else {
-                        System.out.println("Not enough Clips: " + 50000);
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.VALUE_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= spawner.getValueUpgradePrice()) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(spawner.getValueUpgradePrice());
-                        spawner.addValueUpgradeCount();
-                        spawner.addValueUpgrade();
-                    } /* else {
-                        System.out.println("Not enough Clips: " + spawner.getValueUpgradePrice());
-                    } */
-                }
-            }
-            if (tempObject.getID().equals(ID.MORE_UPGRADE)) {
-                if (getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                    if (spawner.getClips() >= spawner.getMoreUpgradePrice()) {
-                        handler.removeObject(tempObject);
-                        spawner.removeClips(spawner.getMoreUpgradePrice());
-                        spawner.addMaxClipCount();
-                        spawner.addMoreUpgradeCount();
-                        spawner.addMoreUpgrade();
-                    } /* else {
-                        System.out.println("Not enough Clips: " + spawner.getMoreUpgradePrice());
-                    } */
-                }
-            }
-            if(game.getGameState().equals(STATE.Menu)) {
-                if(tempObject.getID().equals(ID.NEW_GAME)) {
-                    if(getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                        handler.removeObject(newGame);
-                        handler.removeObject(continueGame);
-                        handler.removeObject(exitGame);
+        }
+    }
+
+    private void collectClip(GameObject clip, int value) {
+        spawner.addClips(value * (spawner.getValueUpgradeCount() + 1));
+        spawner.lowerClipCount();
+        handler.removeObject(clip);
+    }
+
+    private void buyColoredUpgrade(GameObject upgrade, int cost, ID nextID, int newColoredValue) {
+        if (spawner.getClips() >= cost) {
+            spawner.removeClips(cost);
+            if (nextID != null) spawner.addColoredUpgrade(nextID, newColoredValue);
+            else spawner.setColoredUpgrade(newColoredValue);
+            handler.removeObject(upgrade);
+        }
+    }
+
+    private void buyValueUpgrade(GameObject obj) {
+        if (spawner.getClips() >= spawner.getValueUpgradePrice()) {
+            spawner.removeClips(spawner.getValueUpgradePrice());
+            spawner.addValueUpgradeCount();
+            spawner.addValueUpgrade();
+            handler.removeObject(obj);
+        }
+    }
+
+    private void buyMoreUpgrade(GameObject obj) {
+        if (spawner.getClips() >= spawner.getMoreUpgradePrice()) {
+            spawner.removeClips(spawner.getMoreUpgradePrice());
+            spawner.addMaxClipCount();
+            spawner.addMoreUpgradeCount();
+            spawner.addMoreUpgrade();
+            handler.removeObject(obj);
+        }
+    }
+
+    private void handleMenuClicks() {
+        GameObject clickedButton = null;
+
+        // Check actual mouse coordinates
+        for (GameObject obj : handler.getObjects()) {
+            if (!(obj instanceof Menu)) continue;
+
+            Rectangle bounds = obj.getBounds();
+            if (bounds.contains(mouseX, mouseY)) {
+                clickedButton = obj;
+
+                // Perform button action
+                switch (obj.getID()) {
+                    case NEW_GAME -> {
+                        System.out.println("New Game");
                         game.setLevelImage("/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.newGame();
                     }
-                }
-                if(tempObject.getID().equals(ID.CONTINUE)) {
-                    if(getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
-                        handler.removeObject(newGame);
-                        handler.removeObject(continueGame);
-                        handler.removeObject(exitGame);
+                    case CONTINUE -> {
+                        System.out.println("Continue");
                         game.setLevelImage("/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.continueGame();
                     }
-                }
-                if(tempObject.getID().equals(ID.EXIT)) {
-                    if(getBounds().intersects(tempObject.getBounds()) && id == ID.MOUSE) {
+                    case EXIT -> {
+                        System.out.println("Exit");
                         System.exit(0);
                     }
                 }
+
+                break; // Only trigger one button
             }
         }
+
+        // Only remove all menu buttons if NEW_GAME or CONTINUE was clicked
+        if (clickedButton != null && (clickedButton.getID() == ID.NEW_GAME || clickedButton.getID() == ID.CONTINUE)) {
+            List<GameObject> toRemove = new ArrayList<>();
+            for (GameObject obj : handler.getObjects()) {
+                if (obj instanceof Menu) {
+                    toRemove.add(obj);
+                }
+            }
+            toRemove.forEach(handler::removeObject);
+        }
     }
-    // Render to debug
+
+
+
+    @Override
     public void render(Graphics g) {
+        // Optional debug rendering
         // g.fillRect(x, y, 16, 16);
     }
 }

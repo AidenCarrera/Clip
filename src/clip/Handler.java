@@ -3,29 +3,69 @@ package clip;
 import java.awt.*;
 import java.util.LinkedList;
 
-// Handles stuff
 public class Handler {
-    LinkedList<GameObject> objects = new LinkedList<GameObject>();
+    private final LinkedList<GameObject> objects = new LinkedList<>();
+    private final LinkedList<GameObject> toAdd = new LinkedList<>();
+    private final LinkedList<GameObject> toRemove = new LinkedList<>();
+
     // Runs this method every frame
     public void tick() {
-        for(int i = 0; i < objects.size(); i++) {
-            GameObject tempObject = objects.get(i);
-            tempObject.tick();
+        // Tick all current objects
+        for (GameObject obj : objects) {
+            obj.tick();
+        }
+
+        // Safely add queued objects
+        if (!toAdd.isEmpty()) {
+            objects.addAll(toAdd);
+            toAdd.clear();
+        }
+
+        // Safely remove queued objects
+        if (!toRemove.isEmpty()) {
+            objects.removeAll(toRemove);
+            toRemove.clear();
         }
     }
+
     // Renders game objects
     public void render(Graphics g) {
-        for(int i = 0; i < objects.size(); i ++) {
-            GameObject tempObject = objects.get(i);
-            tempObject.render(g);
+        for (GameObject obj : objects) {
+            obj.render(g);
         }
     }
-    // Used to create objects
+
+    // Queues an object to be added after current tick
     public void addObject(GameObject object) {
-        this.objects.add(object);
+        toAdd.add(object);
     }
-    // Used to remove objects
+
+    // Queues an object to be removed after current tick
     public void removeObject(GameObject object) {
-        this.objects.remove(object);
+        toRemove.add(object);
     }
+
+    // Optional: get current objects
+    public LinkedList<GameObject> getObjects() {
+        return objects;
+    }
+
+    public void setMousePositionForMouse(int mouseX, int mouseY) {
+        for (GameObject obj : objects) {
+            if (obj.getID() == ID.MOUSE) {
+                obj.setMouseX(mouseX);
+                obj.setMouseY(mouseY);
+            }
+        }
+    }
+
+    public void resetMousePosition() {
+        for (GameObject obj : objects) {
+            if (obj.getID() == ID.MOUSE) {
+                obj.setMouseX(0);
+                obj.setMouseY(0);
+            }
+        }
+    }
+
 }
