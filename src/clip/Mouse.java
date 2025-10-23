@@ -154,13 +154,13 @@ public class Mouse extends GameObject {
                     } */
                 }
             }
-            if(game.gameState.equals(STATE.Menu)) {
+            if(game.getGameState().equals(STATE.Menu)) {
                 if(tempObject.getID().equals(ID.NewGame)) {
                     if(getBounds().intersects(tempObject.getBounds()) && id == ID.Mouse) {
                         handler.removeObject(newGame);
                         handler.removeObject(continueGame);
                         handler.removeObject(exitGame);
-                        game.setLevelImage(loader, "/images/office.png");
+                        game.setLevelImage("/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.newGame();
                     }
@@ -170,7 +170,7 @@ public class Mouse extends GameObject {
                         handler.removeObject(newGame);
                         handler.removeObject(continueGame);
                         handler.removeObject(exitGame);
-                        game.setLevelImage(loader, "/images/office.png");
+                        game.setLevelImage("/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.continueGame();
                     }
