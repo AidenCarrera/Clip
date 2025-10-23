@@ -1,13 +1,11 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Canvas;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import java.util.Random;
-import javax.swing.ImageIcon;
 
 public class Game extends Canvas implements Runnable {
     private static final long serialVersionUID = 1550691097823471818L;
@@ -27,16 +25,16 @@ public class Game extends Canvas implements Runnable {
     }
     public Game() {
         loader = new BufferedImageLoader();
-        setLevelImage(loader, "menu.png");
+        setLevelImage(loader, "/images/menu.png");
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
-        new ImageIcon(getClass().getResource("cursor.png")).getImage(), new Point(0, 0), "Cursor"));
+        new ImageIcon(Objects.requireNonNull(getClass().getResource("/images/cursor.png"))).getImage(), new Point(0, 0), "Cursor"));
         random = new Random();
         handler = new Handler();
         spawner = new Spawner(handler, random);
         hud = new HUD(spawner);
         new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
         SoundHandler.RunMusic();
-        dog = loader.loadImage("dog.png");
+        dog = loader.loadImage("/images/dog.png");
         newGame = new Menu(1180, 1105, ID.NewGame, handler);
         continueGame = new Menu(1180, 1222, ID.Continue, handler);
         exitGame = new Menu(1180, 1305, ID.Exit, handler);

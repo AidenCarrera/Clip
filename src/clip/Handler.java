@@ -1,6 +1,6 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.LinkedList;
 
 // Handles stuff

@@ -1,9 +1,7 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Canvas;
-import javax.swing.JFrame;
-import java.awt.Dimension;
-import javax.swing.ImageIcon;
+import javax.swing.*;
+import java.awt.*;
 
 public class Window extends Canvas {
     private static final long serialVersionUID = -240840600533728354L;
@@ -18,7 +16,7 @@ public class Window extends Canvas {
         frame.setLocationRelativeTo(null);
         try {
             // Sets icon of Window to osososos
-            ImageIcon image = new ImageIcon(getClass().getResource("oso.jpg"));
+            ImageIcon image = new ImageIcon(getClass().getResource("assets/images/oso.jpg"));
             frame.setIconImage(image.getImage());
         } catch (Exception e) {
             System.out.println("Error loading oso.jpg");

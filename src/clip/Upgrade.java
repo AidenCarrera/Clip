@@ -1,19 +1,17 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Rectangle;
-import javax.swing.ImageIcon;
+import javax.swing.*;
+import java.awt.*;
 
 public class Upgrade extends GameObject {
     private int width, height;
-    private Image redUpgrade = new ImageIcon(getClass().getResource("redUpgrade.png")).getImage();
-    private Image blueUpgrade = new ImageIcon(getClass().getResource("blueUpgrade.png")).getImage();
-    private Image greenUpgrade = new ImageIcon(getClass().getResource("greenUpgrade.png")).getImage();
-    private Image purpleUpgrade = new ImageIcon(getClass().getResource("purpleUpgrade.png")).getImage();
-    private Image yellowUpgrade = new ImageIcon(getClass().getResource("yellowUpgrade.png")).getImage();
-    private Image valueUpgrade = new ImageIcon(getClass().getResource("valueUpgrade.png")).getImage();
-    private Image moreUpgrade = new ImageIcon(getClass().getResource("moreUpgrade.png")).getImage();
+    private Image redUpgrade = new ImageIcon(getClass().getResource("/images/redUpgrade.png")).getImage();
+    private Image blueUpgrade = new ImageIcon(getClass().getResource("/images/blueUpgrade.png")).getImage();
+    private Image greenUpgrade = new ImageIcon(getClass().getResource("/images/greenUpgrade.png")).getImage();
+    private Image purpleUpgrade = new ImageIcon(getClass().getResource("/images/purpleUpgrade.png")).getImage();
+    private Image yellowUpgrade = new ImageIcon(getClass().getResource("/images/yellowUpgrade.png")).getImage();
+    private Image valueUpgrade = new ImageIcon(getClass().getResource("/images/valueUpgrade.png")).getImage();
+    private Image moreUpgrade = new ImageIcon(getClass().getResource("/images/moreUpgrade.png")).getImage();
     public Upgrade(int x, int y, ID id, Handler handler) {
         super(x,y,id);
         width = redUpgrade.getWidth(null);

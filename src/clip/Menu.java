@@ -1,8 +1,6 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.Color;
+import java.awt.*;
 
 public class Menu extends GameObject {
     private int width, height;

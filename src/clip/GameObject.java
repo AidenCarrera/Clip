@@ -1,6 +1,6 @@
-package Intro.Projects.Clip;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+package clip;
+
+import java.awt.*;
 
 public abstract class GameObject {
     // Creates position and ID for objects

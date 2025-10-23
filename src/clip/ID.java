@@ -1,4 +1,4 @@
-package Intro.Projects.Clip;
+package clip;
 
 public enum ID {
     // IDs for objects

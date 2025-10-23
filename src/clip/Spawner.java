@@ -1,4 +1,4 @@
-package Intro.Projects.Clip;
+package clip;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

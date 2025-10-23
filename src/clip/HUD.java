@@ -1,16 +1,12 @@
-package Intro.Projects.Clip;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
+package clip;
 
-import javax.swing.ImageIcon;
-
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 
 public class HUD {
     private Spawner spawner;
-    private Image clipIcon = new ImageIcon(getClass().getResource("clipIcon.png")).getImage();
-    private Image bamboo = new ImageIcon(getClass().getResource("bamboo.png")).getImage();
+    private Image clipIcon = new ImageIcon(getClass().getResource("/images/clipIcon.png")).getImage();
+    private Image bamboo = new ImageIcon(getClass().getResource("/images/bamboo.png")).getImage();
     public HUD(Spawner spawner) {
         this.spawner = spawner;
     }

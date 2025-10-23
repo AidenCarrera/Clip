@@ -1,18 +1,16 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Rectangle;
-import javax.swing.ImageIcon;
+import javax.swing.*;
+import java.awt.*;
 
 public class Paperclip extends GameObject {
     private int width, height;
-    private Image paperclip = new ImageIcon(getClass().getResource("paperclip.png")).getImage();
-    private Image redPaperclip = new ImageIcon(getClass().getResource("redPaperclip.png")).getImage();
-    private Image greenPaperclip = new ImageIcon(getClass().getResource("greenPaperclip.png")).getImage();
-    private Image bluePaperclip = new ImageIcon(getClass().getResource("bluePaperclip.png")).getImage();
-    private Image purplePaperclip = new ImageIcon(getClass().getResource("purplePaperclip.png")).getImage();
-    private Image yellowPaperclip = new ImageIcon(getClass().getResource("yellowPaperclip.png")).getImage();
+    private Image paperclip = new ImageIcon(getClass().getResource("/images/paperclip.png")).getImage();
+    private Image redPaperclip = new ImageIcon(getClass().getResource("/images/redPaperclip.png")).getImage();
+    private Image greenPaperclip = new ImageIcon(getClass().getResource("/images/greenPaperclip.png")).getImage();
+    private Image bluePaperclip = new ImageIcon(getClass().getResource("/images/bluePaperclip.png")).getImage();
+    private Image purplePaperclip = new ImageIcon(getClass().getResource("/images/purplePaperclip.png")).getImage();
+    private Image yellowPaperclip = new ImageIcon(getClass().getResource("/images/yellowPaperclip.png")).getImage();
 
     public Paperclip(int x, int y, ID id, Handler handler) {
         super(x,y,id);

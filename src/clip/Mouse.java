@@ -1,9 +1,8 @@
-package Intro.Projects.Clip;
+package clip;
 
-import java.awt.Graphics;
-// import java.awt.Color;
-import java.awt.Rectangle;
-import Intro.Projects.Clip.Game.STATE;
+import clip.Game.STATE;
+
+import java.awt.*;
 
 public class Mouse extends GameObject {
     private Handler handler;
@@ -161,7 +160,7 @@ public class Mouse extends GameObject {
                         handler.removeObject(newGame);
                         handler.removeObject(continueGame);
                         handler.removeObject(exitGame);
-                        game.setLevelImage(loader, "office.png");
+                        game.setLevelImage(loader, "/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.newGame();
                     }
@@ -171,7 +170,7 @@ public class Mouse extends GameObject {
                         handler.removeObject(newGame);
                         handler.removeObject(continueGame);
                         handler.removeObject(exitGame);
-                        game.setLevelImage(loader, "office.png");
+                        game.setLevelImage(loader, "/images/office.png");
                         game.setGameState(STATE.Game);
                         spawner.continueGame();
                     }

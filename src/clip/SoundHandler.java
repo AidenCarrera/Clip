@@ -1,9 +1,9 @@
-package Intro.Projects.Clip;
+package clip;
 
+import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.sound.sampled.*;
 
 public class SoundHandler {
     private static AudioInputStream inputStream;
@@ -13,7 +13,7 @@ public class SoundHandler {
         try {
             // Load audio clip and loop
             inputStream = AudioSystem.getAudioInputStream(
-                    new File(SoundHandler.class.getResource("music.wav").toURI())
+                    new File(SoundHandler.class.getResource("/audio/music.wav").toURI())
             );
             clip = AudioSystem.getClip();
             clip.open(inputStream);

@@ -1,4 +1,4 @@
-package Intro.Projects.Clip;
+package clip;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;

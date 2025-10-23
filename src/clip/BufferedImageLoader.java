@@ -1,8 +1,8 @@
-package Intro.Projects.Clip;
+package clip;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class BufferedImageLoader {
     private BufferedImage image;
