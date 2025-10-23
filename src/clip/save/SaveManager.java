@@ -3,6 +3,7 @@ package clip.save;
 import clip.core.GameManager;
 import clip.core.ID;
 import clip.core.Handler;
+import clip.core.ColorTier;
 import clip.entities.Upgrade;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class SaveManager {
         String json = "{\n" +
                 "  \"clips\": " + gameManager.getClips() + ",\n" +
                 "  \"maxClipCount\": " + gameManager.getMaxClipCount() + ",\n" +
-                "  \"coloredUpgrade\": " + gameManager.getColoredUpgrade() + ",\n" +
+                "  \"coloredUpgrade\": \"" + gameManager.getColoredUpgrade().name() + "\",\n" +
                 "  \"valueUpgradeCount\": " + gameManager.getValueUpgradeCount() + ",\n" +
                 "  \"moreUpgradeCount\": " + gameManager.getMoreUpgradeCount() + "\n" +
                 "}";
@@ -43,21 +44,32 @@ public class SaveManager {
             content = content.replaceAll("[\\{\\}\\s\"]", ""); // remove braces, quotes, spaces
 
             String[] parts = content.split(",");
-            int clips = 0, maxClipCount = 0, coloredUpgrade = 0, valueUpgradeCount = 0, moreUpgradeCount = 0;
+            int clips = 0;
+            int maxClipCount = 25; // default
+            int valueUpgradeCount = 0;
+            int moreUpgradeCount = 0;
+            ColorTier coloredUpgrade = ColorTier.RED; // default
 
             for (String part : parts) {
                 String[] kv = part.split(":");
                 if (kv.length < 2) continue;
-                switch (kv[0]) {
-                    case "clips" -> clips = Integer.parseInt(kv[1]);
-                    case "maxClipCount" -> maxClipCount = Integer.parseInt(kv[1]);
-                    case "coloredUpgrade" -> coloredUpgrade = Integer.parseInt(kv[1]);
-                    case "valueUpgradeCount" -> valueUpgradeCount = Integer.parseInt(kv[1]);
-                    case "moreUpgradeCount" -> moreUpgradeCount = Integer.parseInt(kv[1]);
+                String key = kv[0];
+                String val = kv[1];
+
+                try {
+                    switch (key) {
+                        case "clips" -> clips = Integer.parseInt(val);
+                        case "maxClipCount" -> maxClipCount = Integer.parseInt(val);
+                        case "coloredUpgrade" -> coloredUpgrade = ColorTier.valueOf(val);
+                        case "valueUpgradeCount" -> valueUpgradeCount = Integer.parseInt(val);
+                        case "moreUpgradeCount" -> moreUpgradeCount = Integer.parseInt(val);
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Failed to parse " + key + ": " + val + " — using default.");
                 }
             }
 
-            // Apply to GameManager
+            // Apply values
             gameManager.setClips(clips);
             gameManager.setMaxClipCount(maxClipCount);
             gameManager.setColoredUpgrade(coloredUpgrade);
@@ -74,16 +86,16 @@ public class SaveManager {
         }
     }
 
+
     // --- Rebuild upgrades in the world ---
     private void rebuildUpgrades(GameManager gameManager) {
         Handler handler = gameManager.getHandler();
+        ColorTier tier = gameManager.getColoredUpgrade();
 
-        int c = gameManager.getColoredUpgrade();
-        if (c >= 100 && c < 1000) handler.addObject(new Upgrade(175, 50, ID.RED_UPGRADE));
-        else if (c >= 1000 && c < 5000) handler.addObject(new Upgrade(175, 50, ID.GREEN_UPGRADE));
-        else if (c >= 5000 && c < 10000) handler.addObject(new Upgrade(175, 50, ID.BLUE_UPGRADE));
-        else if (c >= 10000 && c < 50000) handler.addObject(new Upgrade(175, 50, ID.PURPLE_UPGRADE));
-        else if (c >= 50000) handler.addObject(new Upgrade(175, 50, ID.YELLOW_UPGRADE));
+        // Add the current colored upgrade in the world
+        if (tier != null) {
+            handler.addObject(new Upgrade(175, 50, tier.getUpgradeID()));
+        }
 
         // Always rebuild value and more upgrades
         handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE));

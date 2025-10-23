@@ -5,6 +5,7 @@ import clip.core.GameManager;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
+import clip.core.ColorTier;
 
 public class HUD {
 
@@ -37,8 +38,8 @@ public class HUD {
         // Pull everything from GameManager
         drawIconWithValue(g, clipIcon, 62, 70, gameManager.getClips());
 
-        if (gameManager.getColoredUpgrade() < 100_000) {
-            drawIconWithValue(g, clipIcon, 190, 115, gameManager.getColoredUpgrade());
+        if (gameManager.getColoredUpgrade().getValue() < ColorTier.YELLOW.getValue()) {
+            drawIconWithValue(g, clipIcon, 190, 115, gameManager.getColoredUpgrade().getValue());
         }
 
         drawIconWithValue(g, clipIcon, 83, 210,

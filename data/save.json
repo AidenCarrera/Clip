@@ -1,7 +1,7 @@
 {
-  "clips": 30,
+  "clips": 222,
   "maxClipCount": 25,
-  "coloredUpgrade": 1000,
-  "valueUpgradeCount": 0,
+  "coloredUpgrade": "GREEN",
+  "valueUpgradeCount": 1,
   "moreUpgradeCount": 0
 }

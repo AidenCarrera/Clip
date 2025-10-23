@@ -18,7 +18,7 @@ public class GameManager {
     private int currentClipCount;
     private int maxClipCount;
 
-    private int coloredUpgrade;
+    private ColorTier coloredUpgrade;
     private int valueUpgradeCount;
     private int valueUpgradePrice;
     private int moreUpgradeCount;
@@ -42,7 +42,7 @@ public class GameManager {
         currentClipCount = 0;
         maxClipCount = 25;
 
-        coloredUpgrade = 100;
+        coloredUpgrade = ColorTier.RED;
         valueUpgradeCount = 0;
         valueUpgradePrice = 200;
         moreUpgradeCount = 0;
@@ -94,20 +94,19 @@ public class GameManager {
 
     public void buyColoredUpgrade(GameObject upgrade) {
         switch (upgrade.getID()) {
-            case RED_UPGRADE -> attemptColoredUpgrade(upgrade, 100, ID.GREEN_UPGRADE, 1000);
-            case GREEN_UPGRADE -> attemptColoredUpgrade(upgrade, 1000, ID.BLUE_UPGRADE, 5000);
-            case BLUE_UPGRADE -> attemptColoredUpgrade(upgrade, 5000, ID.PURPLE_UPGRADE, 10000);
-            case PURPLE_UPGRADE -> attemptColoredUpgrade(upgrade, 10000, ID.YELLOW_UPGRADE, 50000);
-            case YELLOW_UPGRADE -> attemptColoredUpgrade(upgrade, 50000, null, 100000);
+            case RED_UPGRADE, GREEN_UPGRADE, BLUE_UPGRADE, PURPLE_UPGRADE, YELLOW_UPGRADE ->
+                    attemptColoredUpgrade(upgrade);
             default -> {}
         }
     }
 
-    private void attemptColoredUpgrade(GameObject upgrade, int cost, ID nextID, int newValue) {
+    private void attemptColoredUpgrade(GameObject upgrade) {
+        ColorTier nextTier = coloredUpgrade.next();
+        int cost = coloredUpgrade.getValue();
         if (clips >= cost) {
             clips -= cost;
-            coloredUpgrade = newValue;
-            if (nextID != null) handler.addObject(new clip.entities.Upgrade(175, 50, nextID));
+            coloredUpgrade = nextTier != null ? nextTier : coloredUpgrade;
+            if (nextTier != null) handler.addObject(new clip.entities.Upgrade(175, 50, nextTier.getUpgradeID()));
             handler.removeObject(upgrade);
         }
     }
@@ -141,16 +140,15 @@ public class GameManager {
 
             // Use the GameManager's Random instance
             double clipToSpawn = random.nextDouble() * totalWeight;
-
-            if (clipToSpawn < yellowP && coloredUpgrade == 100_000) {
+            if (clipToSpawn < yellowP && coloredUpgrade == ColorTier.YELLOW) {
                 spawner.spawnClip(ID.YELLOW_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP && coloredUpgrade >= 50_000) {
+            } else if (clipToSpawn < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal()) {
                 spawner.spawnClip(ID.PURPLE_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP && coloredUpgrade >= 10_000) {
+            } else if (clipToSpawn < yellowP + purpleP + blueP && coloredUpgrade.ordinal() >= ColorTier.BLUE.ordinal()) {
                 spawner.spawnClip(ID.BLUE_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP && coloredUpgrade >= 5_000) {
+            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP && coloredUpgrade.ordinal() >= ColorTier.GREEN.ordinal()) {
                 spawner.spawnClip(ID.GREEN_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP + redP && coloredUpgrade >= 1_000) {
+            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP + redP && coloredUpgrade.ordinal() >= ColorTier.RED.ordinal()) {
                 spawner.spawnClip(ID.RED_PAPERCLIP);
             } else {
                 spawner.spawnClip(ID.PAPERCLIP);
@@ -171,8 +169,8 @@ public class GameManager {
     public int getMaxClipCount() { return maxClipCount; }
     public void setMaxClipCount(int maxClipCount) { this.maxClipCount = maxClipCount; }
 
-    public int getColoredUpgrade() { return coloredUpgrade; }
-    public void setColoredUpgrade(int coloredUpgrade) { this.coloredUpgrade = coloredUpgrade; }
+    public ColorTier getColoredUpgrade() { return coloredUpgrade; }
+    public void setColoredUpgrade(ColorTier coloredUpgrade) { this.coloredUpgrade = coloredUpgrade; }
 
     public int getValueUpgradeCount() { return valueUpgradeCount; }
     public void setValueUpgradeCount(int count) { this.valueUpgradeCount = count; }
