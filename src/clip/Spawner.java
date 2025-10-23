@@ -84,6 +84,8 @@ public class Spawner {
     public int getValueUpgradePrice() { return valueUpgradePrice; }
     public int getValueUpgradeCount() { return valueUpgradeCount; }
     public void addValueUpgradeCount() { valueUpgradeCount++; }
+    public void setValueUpgradeCount(int count) { this.valueUpgradeCount = count; }
+
 
     // --- More upgrade ---
     public void addMoreUpgrade() {
@@ -94,6 +96,7 @@ public class Spawner {
     public int getMoreUpgradePrice() { return moreUpgradePrice; }
     public int getMoreUpgradeCount() { return moreUpgradeCount; }
     public void addMoreUpgradeCount() { moreUpgradeCount++; }
+    public void setMoreUpgradeCount(int count) { this.moreUpgradeCount = count; }
 
     // --- Game control ---
     public void newGame() {
@@ -105,55 +108,5 @@ public class Spawner {
         addColoredUpgrade(ID.RED_UPGRADE, 100);
         addValueUpgrade();
         addMoreUpgrade();
-    }
-
-    public void continueGame() {
-        System.out.println("Game Continued");
-        List<Integer> saved = loadSaveFile();
-        if (saved.size() >= 5) {
-            clips = saved.get(0);
-            maxClipCount = saved.get(1);
-            coloredUpgrade = saved.get(2);
-            valueUpgradeCount = saved.get(3);
-            moreUpgradeCount = saved.get(4);
-
-            // Restore colored upgrade object
-            if (coloredUpgrade >= 100 && coloredUpgrade < 1000) addColoredUpgrade(ID.RED_UPGRADE, 100);
-            else if (coloredUpgrade >= 1000 && coloredUpgrade < 5000) addColoredUpgrade(ID.GREEN_UPGRADE, 1000);
-            else if (coloredUpgrade >= 5000 && coloredUpgrade < 10000) addColoredUpgrade(ID.BLUE_UPGRADE, 5000);
-            else if (coloredUpgrade >= 10000 && coloredUpgrade < 50000) addColoredUpgrade(ID.PURPLE_UPGRADE, 10000);
-            else if (coloredUpgrade >= 50000) addColoredUpgrade(ID.YELLOW_UPGRADE, 50000);
-
-            addValueUpgrade();
-            addMoreUpgrade();
-        } else {
-            newGame(); // fallback
-        }
-    }
-
-    // --- Save/load helpers ---
-    private List<Integer> loadSaveFile() {
-        try {
-            List<String> lines = Files.readAllLines(Paths.get(path), StandardCharsets.UTF_8);
-            return lines.stream().map(line -> {
-                try { return Integer.parseInt(line.trim()); }
-                catch (NumberFormatException e) { return 0; }
-            }).toList();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
-    public void save() {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(path), StandardCharsets.UTF_8)) {
-            writer.write(clips + "\n");
-            writer.write(maxClipCount + "\n");
-            writer.write(coloredUpgrade + "\n");
-            writer.write(valueUpgradeCount + "\n");
-            writer.write(moreUpgradeCount + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

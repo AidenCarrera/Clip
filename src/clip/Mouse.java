@@ -112,14 +112,14 @@ public class Mouse extends GameObject {
                     case NEW_GAME -> {
                         System.out.println("New Game");
                         game.setLevelImage("/images/office.png");
-                        game.setGameState(STATE.Game);
-                        spawner.newGame();
+                        game.setGameState(Game.STATE.Game);
+                        game.getGameManager().startNewGame();  // <-- use GameManager
                     }
                     case CONTINUE -> {
                         System.out.println("Continue");
                         game.setLevelImage("/images/office.png");
-                        game.setGameState(STATE.Game);
-                        spawner.continueGame();
+                        game.setGameState(Game.STATE.Game);
+                        game.getGameManager().continueGame();  // <-- use GameManager
                     }
                     case EXIT -> {
                         System.out.println("Exit");

@@ -22,6 +22,7 @@ public class Game extends Canvas implements Runnable {
     private final BufferedImageLoader loader;
     private final Handler handler;
     private final HUD hud;
+    private final GameManager gameManager;
     private final Spawner spawner;
 
     private BufferedImage levelImage = null;
@@ -47,48 +48,46 @@ public class Game extends Canvas implements Runnable {
         ).getImage();
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "Cursor"));
 
-        Random random = new Random();
         handler = new Handler();
-        spawner = new Spawner(handler, random);
+
+        // --- GameManager and Spawner ---
+        gameManager = new GameManager(handler);
+        spawner = gameManager.getSpawner();
+
         hud = new HUD(spawner);
 
         new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
 
         SoundHandler.RunMusic();
-
         dog = loader.loadImage("/images/dog.png");
 
-        // Example positions near the bottom, percentages from bottom
-        Menu newGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME);
-        Menu continueGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
-        Menu exitGame = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
+        // --- Menu buttons ---
+        Menu newGameBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME);
+        Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
+        Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
 
-        newGame.setVisible(false);
-        continueGame.setVisible(false);
-        exitGame.setVisible(false);
+        handler.addObject(newGameBtn);
+        handler.addObject(continueBtn);
+        handler.addObject(exitBtn);
 
-        handler.addObject(newGame);
-        handler.addObject(continueGame);
-        handler.addObject(exitGame);
-
+        // --- Mouse input ---
         MouseInput mouseInput = new MouseInput(handler);
         handler.addObject(new Mouse(0, 0, ID.MOUSE, handler, spawner, this));
         this.addMouseListener(mouseInput);
         this.addMouseMotionListener(mouseInput);
     }
 
-    public STATE getGameState() {
-        return gameState;
+    // --- Game state getters/setters ---
+    public STATE getGameState() { return gameState; }
+    public void setGameState(STATE gameState) { this.gameState = gameState; }
+    public void setLevelImage(String path) { levelImage = loader.loadImage(path); }
+
+    public GameManager getGameManager() {
+        return gameManager;
     }
 
-    public void setGameState(STATE gameState) {
-        this.gameState = gameState;
-    }
 
-    public void setLevelImage(String path) {
-        levelImage = loader.loadImage(path);
-    }
-
+    // --- Game loop ---
     public synchronized void start() {
         if (running) return;
         running = true;
@@ -117,9 +116,9 @@ public class Game extends Canvas implements Runnable {
 
         while (running) {
             render = false;
-            double firstTime = System.nanoTime() / 1e9;
-            double passedTime = firstTime - lastTime;
-            lastTime = firstTime;
+            double currentTime = System.nanoTime() / 1e9;
+            double passedTime = currentTime - lastTime;
+            lastTime = currentTime;
 
             unprocessedTime += passedTime;
             frameTime += passedTime;
@@ -135,7 +134,7 @@ public class Game extends Canvas implements Runnable {
                     frames = 0;
                     System.out.println(fps + " FPS");
 
-                    if (gameState == STATE.Game) spawner.save();
+                    if (gameState == STATE.Game) gameManager.saveGame();
                 }
             }
 
@@ -143,9 +142,7 @@ public class Game extends Canvas implements Runnable {
                 render();
                 frames++;
             } else {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException ignored) {}
+                try { Thread.sleep(1); } catch (InterruptedException ignored) {}
             }
         }
 
@@ -156,7 +153,7 @@ public class Game extends Canvas implements Runnable {
     private void tick() {
         handler.tick();
 
-        // Update menu button positions if in Menu state
+        // Update menu button positions
         if (gameState == STATE.Menu) {
             int buttonIndex = 2;
             for (GameObject obj : handler.getObjects()) {
@@ -166,6 +163,7 @@ public class Game extends Canvas implements Runnable {
             }
         }
 
+        // Tick game logic
         if (gameState == STATE.Game) {
             spawner.tick();
             hud.tick();
@@ -175,7 +173,7 @@ public class Game extends Canvas implements Runnable {
     private void render() {
         BufferStrategy bs = this.getBufferStrategy();
         if (bs == null) {
-            this.createBufferStrategy(3); // triple buffering for smoother rendering
+            this.createBufferStrategy(3);
             return;
         }
 
@@ -193,7 +191,6 @@ public class Game extends Canvas implements Runnable {
         bs.show();
     }
 
-    // Clamp a value between min and max
     public static int clamp(int var, int min, int max) {
         return Math.max(min, Math.min(max, var));
     }
