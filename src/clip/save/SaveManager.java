@@ -5,99 +5,78 @@ import clip.core.GameManager;
 import clip.core.Handler;
 import clip.core.ID;
 import clip.entities.Upgrade;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class SaveManager {
+
     private final String path;
+    private final ObjectMapper mapper;
 
     public SaveManager(String path) {
         this.path = path;
+        this.mapper = new ObjectMapper();
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     // --- SAVE ---
     public void save(GameManager gameManager) {
-        // Build JSON manually
-        String json = "{\n" +
-                "  \"clips\": " + gameManager.getClips() + ",\n" +
-                "  \"maxClipCount\": " + gameManager.getMaxClipCount() + ",\n" +
-                "  \"coloredUpgrade\": \"" + gameManager.getColoredUpgrade().name() + "\",\n" +
-                "  \"valueUpgradeCount\": " + gameManager.getValueUpgradeCount() + ",\n" +
-                "  \"moreUpgradeCount\": " + gameManager.getMoreUpgradeCount() + "\n" +
-                "}";
+        GameSaveData data = new GameSaveData(
+                gameManager.getClips(),
+                gameManager.getMaxClipCount(),
+                gameManager.getColoredUpgrade().name(),
+                gameManager.getValueUpgradeCount(),
+                gameManager.getMoreUpgradeCount()
+        );
 
         try {
-            Files.write(Paths.get(path), json.getBytes(StandardCharsets.UTF_8));
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(path), data);
             System.out.println("Game saved as JSON.");
         } catch (IOException e) {
+            System.err.println("Failed to save game.");
             e.printStackTrace();
         }
     }
 
     // --- LOAD ---
     public boolean load(GameManager gameManager) {
+        File file = new File(path);
+        if (!file.exists()) {
+            System.out.println("Save file not found. Starting new game.");
+            return false;
+        }
+
         try {
-            String content = Files.readString(Paths.get(path), StandardCharsets.UTF_8);
-            content = content.replaceAll("[\\{\\}\\s\"]", ""); // remove braces, quotes, spaces
+            GameSaveData data = mapper.readValue(file, GameSaveData.class);
 
-            String[] parts = content.split(",");
-            int clips = 0;
-            int maxClipCount = 25; // default
-            int valueUpgradeCount = 0;
-            int moreUpgradeCount = 0;
-            ColorTier coloredUpgrade = ColorTier.RED; // default
-
-            for (String part : parts) {
-                String[] kv = part.split(":");
-                if (kv.length < 2) continue;
-                String key = kv[0];
-                String val = kv[1];
-
-                try {
-                    switch (key) {
-                        case "clips" -> clips = Integer.parseInt(val);
-                        case "maxClipCount" -> maxClipCount = Integer.parseInt(val);
-                        case "coloredUpgrade" -> coloredUpgrade = ColorTier.valueOf(val);
-                        case "valueUpgradeCount" -> valueUpgradeCount = Integer.parseInt(val);
-                        case "moreUpgradeCount" -> moreUpgradeCount = Integer.parseInt(val);
-                    }
-                } catch (Exception ex) {
-                    System.out.println("Failed to parse " + key + ": " + val + " — using default.");
-                }
-            }
-
-            // Apply values
-            gameManager.setClips(clips);
-            gameManager.setMaxClipCount(maxClipCount);
-            gameManager.setColoredUpgrade(coloredUpgrade);
-            gameManager.setValueUpgradeCount(valueUpgradeCount);
-            gameManager.setMoreUpgradeCount(moreUpgradeCount);
+            gameManager.setClips(data.clips);
+            gameManager.setMaxClipCount(data.maxClipCount);
+            gameManager.setColoredUpgrade(ColorTier.valueOf(data.coloredUpgrade));
+            gameManager.setValueUpgradeCount(data.valueUpgradeCount);
+            gameManager.setMoreUpgradeCount(data.moreUpgradeCount);
 
             rebuildUpgrades(gameManager);
             System.out.println("Game loaded from JSON.");
             return true;
 
-        } catch (IOException e) {
-            System.out.println("Save file not found. Starting new game.");
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("Failed to load save file. Starting new game.");
+            e.printStackTrace();
             return false;
         }
     }
 
-
-    // --- Rebuild upgrades in the world ---
     private void rebuildUpgrades(GameManager gameManager) {
         Handler handler = gameManager.getHandler();
         ColorTier tier = gameManager.getColoredUpgrade();
 
-        // Add the current colored upgrade in the world
         if (tier != null) {
             handler.addObject(new Upgrade(175, 50, tier.getUpgradeID()));
         }
 
-        // Always rebuild value and more upgrades
         handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE));
         handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE));
     }

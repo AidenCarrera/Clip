@@ -27,7 +27,6 @@ public class Game extends Canvas implements Runnable {
     private final Handler handler;
     private final HUD hud;
     private final GameManager gameManager;
-    private final ConfigManager config;
     private final double autoSaveInterval; // from config
 
     private BufferedImage levelImage = null;
@@ -46,8 +45,6 @@ public class Game extends Canvas implements Runnable {
     }
 
     public Game(ConfigManager config) {
-        // Load configuration before anything else
-        this.config = config;
 
         // Set dynamic window dimensions
         int width = config.displayWidth;

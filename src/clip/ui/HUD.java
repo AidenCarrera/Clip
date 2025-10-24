@@ -17,31 +17,33 @@ public class HUD implements MouseListener {
 
     private final ConfigManager config;
     private final GameManager gameManager;
+    private final double scale;
 
     private final Image clipIcon;
     private final Image bamboo;
 
-    private final Font mainFont = new Font("TimesRoman", Font.BOLD, 24);
-    private final Color textColor = Color.YELLOW;
+    private final Font mainFont;
+    private final Color textColor = Color.WHITE;
 
     private final Map<ID, Image> upgradeImages = new HashMap<>();
     private final Map<ID, Rectangle> upgradeRects = new HashMap<>();
 
-    // Upgrade positions
+    // Base positions & sizes
     private static final int COLORED_X = 170, COLORED_Y = 70;
     private static final int VALUE_X = 170, VALUE_Y = 165;
     private static final int MORE_X = 60, MORE_Y = 165;
-
-    // Sizes
-    private static final int IMAGE_SIZE = 70;   // drawn image size
-    private static final int HITBOX_SIZE = 60;  // clickable area size
+    private static final int IMAGE_SIZE = 70;
+    private static final int HITBOX_SIZE = 60;
 
     public HUD(GameManager gameManager, ConfigManager config) {
         this.gameManager = gameManager;
         this.config = config;
+        this.scale = config.hudScale;
 
         clipIcon = load("/images/clipIcon.png");
         bamboo = load("/images/bamboo.png");
+
+        mainFont = new Font("TimesRoman", Font.BOLD, (int) (20 * scale));
 
         // Load upgrade images
         upgradeImages.put(ID.RED_UPGRADE, load("/images/redUpgrade.png"));
@@ -52,33 +54,59 @@ public class HUD implements MouseListener {
         upgradeImages.put(ID.VALUE_UPGRADE, load("/images/valueUpgrade.png"));
         upgradeImages.put(ID.MORE_UPGRADE, load("/images/moreUpgrade.png"));
 
-        // Static upgrade rectangles
-        upgradeRects.put(ID.VALUE_UPGRADE, new Rectangle(VALUE_X, VALUE_Y, HITBOX_SIZE, HITBOX_SIZE));
-        upgradeRects.put(ID.MORE_UPGRADE, new Rectangle(MORE_X, MORE_Y, HITBOX_SIZE, HITBOX_SIZE));
+        // Initial upgrade rectangles (centered on image)
+        initHitboxes();
+    }
+
+    private void initHitboxes() {
+        upgradeRects.put(ID.VALUE_UPGRADE, createHitbox(VALUE_X, VALUE_Y));
+        upgradeRects.put(ID.MORE_UPGRADE, createHitbox(MORE_X, MORE_Y));
+
+        // Colored upgrades will be dynamically added in drawColoredUpgrade
+    }
+
+    private Rectangle createHitbox(int baseX, int baseY) {
+        int scaledImage = scaledSize(IMAGE_SIZE);
+        int scaledHitbox = scaledSize(HITBOX_SIZE);
+        int offset = (scaledImage - scaledHitbox) / 2;
+        return new Rectangle(scaledX(baseX) + offset, scaledY(baseY) + offset, scaledHitbox, scaledHitbox);
     }
 
     private Image load(String path) {
         return new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
     }
 
-    public void tick() {
-        // Optional: animations or effects
-    }
+    private int scaledX(int x) { return (int) (x * scale); }
+    private int scaledY(int y) { return (int) (y * scale); }
+    private int scaledSize(int size) { return (int) (size * scale); }
+
+    public void tick() {}
 
     public void render(Graphics g) {
-        g.drawImage(bamboo, 0, 0, null);
+        // Background
+        g.drawImage(bamboo, 0, 0, (int)(bamboo.getWidth(null) * scale), (int)(bamboo.getHeight(null) * scale), null);
+
         g.setFont(mainFont);
         g.setColor(textColor);
 
         // Clip counter
-        drawIconWithValue(g, clipIcon, 62, 80, gameManager.getClips());
+        drawIconWithValue(g, clipIcon, scaledX(62), scaledY(80), gameManager.getClips());
 
-        // Draw upgrades
+        // Upgrades
         drawColoredUpgrade(g, COLORED_X, COLORED_Y);
         drawGenericUpgrade(g, ID.VALUE_UPGRADE, VALUE_X, VALUE_Y,
                 gameManager.getValueUpgradePrice(), gameManager.getValueUpgradeCount());
         drawGenericUpgrade(g, ID.MORE_UPGRADE, MORE_X, MORE_Y,
                 gameManager.getMoreUpgradePrice(), gameManager.getMoreUpgradeCount());
+
+        if (config.debugMode) { // only show in debug mode
+            g.setColor(Color.RED);
+            for (Rectangle rect : upgradeRects.values()) {
+                if (rect != null) {
+                    g.drawRect(rect.x, rect.y, rect.width, rect.height);
+                }
+            }
+        }
     }
 
     private void drawColoredUpgrade(Graphics g, int x, int y) {
@@ -89,10 +117,12 @@ public class HUD implements MouseListener {
         if (img == null) return;
 
         int cost = getUpgradeCost(nextTier);
-        g.drawImage(img, x, y, IMAGE_SIZE, IMAGE_SIZE, null);
-        drawIconWithValue(g, clipIcon, x, y, cost);
+        g.drawImage(img, scaledX(x), scaledY(y), scaledSize(IMAGE_SIZE), scaledSize(IMAGE_SIZE), null);
 
-        upgradeRects.put(nextTier.getUpgradeID(), new Rectangle(x, y, HITBOX_SIZE, HITBOX_SIZE));
+        drawIconWithValue(g, clipIcon, scaledX(x), scaledY(y), cost);
+
+        // Update hitbox dynamically
+        upgradeRects.put(nextTier.getUpgradeID(), createHitbox(x, y));
     }
 
     private int getUpgradeCost(ColorTier tier) {
@@ -110,22 +140,24 @@ public class HUD implements MouseListener {
         Image img = upgradeImages.get(id);
         if (img == null) return;
 
-        g.drawImage(img, x, y, IMAGE_SIZE, IMAGE_SIZE, null);
-        drawIconWithValue(g, clipIcon, x, y, price, count, x - 34, y + 22);
+        g.drawImage(img, scaledX(x), scaledY(y), scaledSize(IMAGE_SIZE), scaledSize(IMAGE_SIZE), null);
+        drawIconWithValue(g, clipIcon, scaledX(x), scaledY(y), price, count, scaledX(x - 34), scaledY(y + 22));
 
-        upgradeRects.put(id, new Rectangle(x, y, HITBOX_SIZE, HITBOX_SIZE));
+        // Hitbox already created in initHitboxes
     }
 
     private void drawIconWithValue(Graphics g, Image icon, int x, int y, int value) {
-        g.drawImage(icon, x, y - 18, null);
-        g.drawString(String.valueOf(value), x + 20, y + 5);
+        g.drawImage(icon, x, y - scaledSize(18), null);
+        g.drawString(String.valueOf(value), x + scaledSize(20), y + scaledSize(5));
     }
 
     private void drawIconWithValue(Graphics g, Image icon, int iconX, int iconY,
                                    int price, int count, int countX, int countY) {
-        g.drawImage(icon, iconX - 10, iconY - 25, null);
-        g.drawString("(" + count + ")", countX + 40, countY - 25);
-        g.drawString(String.valueOf(price), iconX + 40, iconY);
+        g.drawImage(icon, iconX - scaledSize(5), iconY - scaledSize(20), null);
+
+        // Keep price at original position, prepend count
+        String text = "(" + count + ") " + price;
+        g.drawString(text, countX + scaledSize(45), countY - scaledSize(25));  // countX/countY are where the price used to be
     }
 
     // ---------------- MouseListener -----------------
