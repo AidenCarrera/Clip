@@ -54,7 +54,19 @@ public class SaveManager {
 
             gameManager.setClips(data.clips);
             gameManager.setMaxClipCount(data.maxClipCount);
-            gameManager.setColoredUpgrade(ColorTier.valueOf(data.coloredUpgrade));
+
+            // Safely load the colored upgrade
+            try {
+                if (data.coloredUpgrade != null && !data.coloredUpgrade.isBlank()) {
+                    gameManager.setColoredUpgrade(ColorTier.valueOf(data.coloredUpgrade));
+                } else {
+                    gameManager.setColoredUpgrade(ColorTier.NONE); // <-- Default fallback
+                }
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid coloredUpgrade in save file: " + data.coloredUpgrade);
+                gameManager.setColoredUpgrade(ColorTier.NONE);
+            }
+
             gameManager.setValueUpgradeCount(data.valueUpgradeCount);
             gameManager.setMoreUpgradeCount(data.moreUpgradeCount);
 
@@ -62,9 +74,10 @@ public class SaveManager {
             System.out.println("Game loaded from JSON.");
             return true;
 
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (IOException e) {
             System.err.println("Failed to load save file. Starting new game.");
             e.printStackTrace();
+            gameManager.setColoredUpgrade(ColorTier.NONE); // Safety net even here
             return false;
         }
     }

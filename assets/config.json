@@ -26,7 +26,7 @@
     "autoSaveIntervalSeconds": 15,
     "maxSaveFiles": 5,
     "debugMode": false,
-    "clickTolerance": 10
+    "clickTolerance": 100
   },
   "paperclips": {
     "baseValue": 1,

@@ -164,6 +164,7 @@ public class ConfigManager {
         autoSaveIntervalSeconds = data.system.autoSaveIntervalSeconds;
         maxSaveFiles = data.system.maxSaveFiles;
         debugMode = data.system.debugMode;
+        clickTolerance = data.system.clickTolerance;
 
         // --- Apply paperclips ---
         paperclipBaseValue = data.paperclips.baseValue;
