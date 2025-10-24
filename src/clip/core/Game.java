@@ -32,11 +32,7 @@ public class Game extends Canvas implements Runnable {
     private BufferedImage levelImage = null;
     private final BufferedImage dog;
 
-    public enum STATE {
-        Menu, Game
-    }
-
-    private STATE gameState = STATE.Menu;
+    private GameState gameState = GameState.MENU;
 
     static void main() {
         ConfigManager config = new ConfigManager("assets/config.json");
@@ -82,17 +78,13 @@ public class Game extends Canvas implements Runnable {
         dog = loader.loadImage("/images/dog.png");
 
         // --- Menu buttons ---
-        Menu newGameBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME);
-        Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
-        Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
+        Menu newGameBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME, config);
+        Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE, config);
+        Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT, config);
 
         newGameBtn.updatePosition(width, height, 2);
         continueBtn.updatePosition(width, height, 1);
         exitBtn.updatePosition(width, height, 0);
-
-        newGameBtn.setVisible(false);
-        continueBtn.setVisible(false);
-        exitBtn.setVisible(false);
 
         handler.addObject(newGameBtn);
         handler.addObject(continueBtn);
@@ -103,8 +95,8 @@ public class Game extends Canvas implements Runnable {
     }
 
     // --- Game state getters/setters ---
-    public STATE getGameState() { return gameState; }
-    public void setGameState(STATE gameState) { this.gameState = gameState; }
+    public GameState getGameState() { return gameState; }
+    public void setGameState(GameState gameState) { this.gameState = gameState; }
     public void setLevelImage(String path) { levelImage = loader.loadImage(path); }
 
     public GameManager getGameManager() { return gameManager; }
@@ -158,8 +150,8 @@ public class Game extends Canvas implements Runnable {
                     frames = 0;
                     System.out.println(fps + " FPS");
 
-                    // ✅ Auto-save interval from config
-                    if (gameState == STATE.Game) {
+                    // Auto-save interval from config
+                    if (gameState == GameState.GAME) {
                         autoSaveTimer += 1.0;
                         if (autoSaveTimer >= autoSaveInterval) {
                             gameManager.saveGame();
@@ -179,7 +171,7 @@ public class Game extends Canvas implements Runnable {
         }
 
         // Save on exit
-        if (gameState == STATE.Game) {
+        if (gameState == GameState.GAME) {
             gameManager.saveGame();
             System.out.println("Game saved on exit.");
         }
@@ -191,8 +183,8 @@ public class Game extends Canvas implements Runnable {
     private void tick() {
         handler.tick();
 
-        // Update menu button positions
-        if (gameState == STATE.Menu) {
+        // Update menu button positions only in menu state
+        if (gameState == GameState.MENU) {
             int buttonIndex = 2;
             for (GameObject obj : handler.getObjects()) {
                 if (obj instanceof Menu menuButton) {
@@ -201,7 +193,7 @@ public class Game extends Canvas implements Runnable {
             }
         }
 
-        if (gameState == STATE.Game) {
+        if (gameState == GameState.GAME) {
             gameManager.tick();
             hud.tick();
         }
@@ -217,7 +209,7 @@ public class Game extends Canvas implements Runnable {
         Graphics g = bs.getDrawGraphics();
         g.drawImage(levelImage, 0, 0, getWidth(), getHeight(), null);
 
-        if (gameState == STATE.Menu) {
+        if (gameState == GameState.MENU) {
             g.drawImage(dog, 960, 20, null);
         } else {
             hud.render(g);

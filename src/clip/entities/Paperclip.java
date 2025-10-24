@@ -2,6 +2,7 @@ package clip.entities;
 
 import clip.core.GameObject;
 import clip.core.ID;
+import clip.core.ConfigManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,8 +26,8 @@ public class Paperclip extends GameObject {
     private static final Image YELLOW_PAPERCLIP = new ImageIcon(
             Objects.requireNonNull(Paperclip.class.getResource("/images/yellowPaperclip.png"))).getImage();
 
-    public Paperclip(int x, int y, ID id) {
-        super(x, y, id);
+    public Paperclip(int x, int y, ID id, ConfigManager config) {
+        super(x, y, id, config);
         Image img = getImageForID();
         width = img.getWidth(null);
         height = img.getHeight(null);

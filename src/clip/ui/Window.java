@@ -36,8 +36,12 @@ public class Window extends Canvas {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                game.getGameManager().saveGame();
-                System.out.println("Game saved on window close.");
+                if (game.getGameState() == clip.core.GameState.GAME) {
+                    game.getGameManager().saveGame();
+                    System.out.println("Game saved on window close.");
+                } else {
+                    System.out.println("Closed during menu – skipping save.");
+                }
                 System.exit(0);
             }
         });

@@ -74,10 +74,10 @@ public class SaveManager {
         ColorTier tier = gameManager.getColoredUpgrade();
 
         if (tier != null) {
-            handler.addObject(new Upgrade(175, 50, tier.getUpgradeID()));
+            handler.addObject(new Upgrade(175, 50, tier.getUpgradeID(), gameManager.getConfig()));
         }
 
-        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE));
-        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE));
+        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE, gameManager.getConfig()));
+        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE, gameManager.getConfig()));
     }
 }

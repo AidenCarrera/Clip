@@ -52,8 +52,7 @@ public class Handler {
     public synchronized void setMousePositionForMouse(int mouseX, int mouseY) {
         for (GameObject obj : objects) {
             if (obj.getID() == ID.MOUSE) {
-                obj.setMouseX(mouseX);
-                obj.setMouseY(mouseY);
+                obj.setMousePosition(mouseX, mouseY);
             }
         }
     }
@@ -61,8 +60,7 @@ public class Handler {
     public synchronized void resetMousePosition() {
         for (GameObject obj : objects) {
             if (obj.getID() == ID.MOUSE) {
-                obj.setMouseX(0);
-                obj.setMouseY(0);
+                obj.setMousePosition(0, 0);
             }
         }
     }

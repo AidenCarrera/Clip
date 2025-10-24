@@ -27,7 +27,7 @@ public class Spawner {
         int x = random.nextInt(config.displayWidth - 2 * marginX) + marginX;
         int y = random.nextInt(config.displayHeight - 2 * marginY) + marginY;
 
-        handler.addObject(new Paperclip(x, y, id));
+        handler.addObject(new Paperclip(x, y, id, config));
     }
 
     /**

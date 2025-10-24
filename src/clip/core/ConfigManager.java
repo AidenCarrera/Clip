@@ -35,6 +35,7 @@ public class ConfigManager {
     public int autoSaveIntervalSeconds;
     public int maxSaveFiles;
     public boolean debugMode;
+    public int clickTolerance;
 
     public int paperclipBaseValue;
     public double basicPaperclipWeight;
@@ -84,6 +85,7 @@ public class ConfigManager {
         public int autoSaveIntervalSeconds = 15;
         public int maxSaveFiles = 5;
         public boolean debugMode = false;
+        public int clickTolerance = 5;
     }
 
     public static class PaperclipsConfig {

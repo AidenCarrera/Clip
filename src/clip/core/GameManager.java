@@ -1,11 +1,16 @@
 package clip.core;
 
 import clip.entities.Spawner;
+import clip.entities.Upgrade;
 import clip.save.SaveManager;
+import clip.ui.Menu;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GameManager {
+
     private final Handler handler;
     private final SaveManager saveManager;
     private final Spawner spawner;
@@ -21,6 +26,12 @@ public class GameManager {
     private int valueUpgradeCount;
     private int moreUpgradeCount;
 
+    // GameState
+    private GameState state;
+
+    // Menu buttons
+    private List<Menu> menuButtons;
+
     public GameManager(Handler handler, ConfigManager config) {
         this.handler = handler;
         this.config = config;
@@ -28,12 +39,50 @@ public class GameManager {
         this.random = new Random();
         this.spawner = new Spawner(handler, random, config);
 
-        // Don't start a new game here—only load or start explicitly
+        this.state = GameState.MENU;
+        this.menuButtons = new ArrayList<>();
+
+        showMenuButtons(); // initially show menu
+    }
+
+    // --- Menu management ---
+    public void showMenuButtons() {
+        if (!menuButtons.isEmpty()) return; // prevent duplicates
+
+        int width = config.displayWidth;
+        int height = config.displayHeight;
+
+        Menu newGameBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.NEW_GAME, config);
+        Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE, config);
+        Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT, config);
+
+        newGameBtn.updatePosition(width, height, 2);
+        continueBtn.updatePosition(width, height, 1);
+        exitBtn.updatePosition(width, height, 0);
+
+        menuButtons.add(newGameBtn);
+        menuButtons.add(continueBtn);
+        menuButtons.add(exitBtn);
+
+        for (Menu btn : menuButtons) {
+            handler.addObject(btn);
+        }
+    }
+
+    public void hideMenuButtons() {
+        for (Menu btn : menuButtons) {
+            handler.removeObject(btn);
+        }
+        menuButtons.clear();
     }
 
     // --- Game control ---
     public void startNewGame() {
         System.out.println("Game Restarted");
+
+        state = GameState.GAME;
+
+        hideMenuButtons(); // remove menu buttons when game starts
 
         clips = config.startClips;
         currentClipCount = 0;
@@ -44,13 +93,16 @@ public class GameManager {
         moreUpgradeCount = 0;
 
         // Add initial upgrade objects
-        handler.addObject(new clip.entities.Upgrade(175, 50, ColorTier.RED.getUpgradeID()));
-        handler.addObject(new clip.entities.Upgrade(175, 145, ID.VALUE_UPGRADE));
-        handler.addObject(new clip.entities.Upgrade(65, 145, ID.MORE_UPGRADE));
+        handler.addObject(new Upgrade(175, 50, ColorTier.RED.getUpgradeID(), config));
+        handler.addObject(new Upgrade(175, 145, ID.VALUE_UPGRADE, config));
+        handler.addObject(new Upgrade(65, 145, ID.MORE_UPGRADE, config));
     }
 
     public void continueGame() {
         System.out.println("Loading previous game...");
+        state = GameState.GAME;
+        hideMenuButtons();
+
         if (!saveManager.load(this)) {
             System.out.println("No save found — starting new game.");
             startNewGame();
@@ -58,6 +110,10 @@ public class GameManager {
     }
 
     public void saveGame() {
+        if (coloredUpgrade == null) {
+            System.out.println("No game state to save yet.");
+            return;
+        }
         saveManager.save(this);
     }
 
@@ -138,6 +194,8 @@ public class GameManager {
 
     // --- Game ticking / spawning ---
     public void tick() {
+        if (state != GameState.GAME) return;
+
         while (currentClipCount < maxClipCount) {
             double P = 69;
             double redP = config.redSpawnWeight;
@@ -187,4 +245,11 @@ public class GameManager {
     public void setMoreUpgradeCount(int count) { this.moreUpgradeCount = count; }
 
     public Handler getHandler() { return handler; }
+    public ConfigManager getConfig() { return config; }
+    public GameState getState() { return state; }
+    public void setState(GameState state) {
+        this.state = state;
+        if (state == GameState.MENU) showMenuButtons();
+        else hideMenuButtons();
+    }
 }
