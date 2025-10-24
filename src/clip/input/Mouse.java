@@ -4,6 +4,7 @@ import clip.core.Game;
 import clip.core.Game.STATE;
 import clip.core.GameObject;
 import clip.core.Handler;
+import clip.core.ConfigManager;
 import clip.core.ID;
 import clip.ui.HUD;
 import clip.ui.Menu;
@@ -20,14 +21,15 @@ public class Mouse extends GameObject implements MouseListener, MouseMotionListe
     private final Handler handler;
     private final Game game;
     private final HUD hud;
-
+    private final ConfigManager config;
     private int mouseX, mouseY;
 
-    public Mouse(int x, int y, ID id, Handler handler, Game game, HUD hud) {
+    public Mouse(int x, int y, ID id, Handler handler, Game game, HUD hud, ConfigManager config) {
         super(x, y, id);
         this.handler = handler;
         this.game = game;
         this.hud = hud;
+        this.config = config;
     }
 
     @Override
@@ -37,12 +39,12 @@ public class Mouse extends GameObject implements MouseListener, MouseMotionListe
 
     @Override
     public void tick() {
-        // Clamp and update mouse position
-        x = Game.clamp(mouseX, 0, Game.WIDTH - 416);
-        y = Game.clamp(mouseY, 0, Game.HEIGHT - 300);
+        int maxX = config.displayWidth - 16;
+        int maxY = config.displayHeight - 16;
+        x = Game.clamp(mouseX, 0, maxX);
+        y = Game.clamp(mouseY, 0, maxY);
 
         if (game.getGameState() == STATE.Game) {
-            // Collect paperclips automatically
             collectPaperclips();
         }
     }

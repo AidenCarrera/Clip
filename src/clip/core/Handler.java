@@ -9,8 +9,7 @@ public class Handler {
     private final LinkedList<GameObject> toRemove = new LinkedList<>();
 
     // Runs this method every frame
-    public void tick() {
-        // Tick all current objects
+    public synchronized void tick() {
         for (GameObject obj : objects) {
             obj.tick();
         }
@@ -29,28 +28,28 @@ public class Handler {
     }
 
     // Renders game objects
-    public void render(Graphics g) {
+    public synchronized void render(Graphics g) {
         for (GameObject obj : objects) {
             obj.render(g);
         }
     }
 
     // Queues an object to be added after current tick
-    public void addObject(GameObject object) {
+    public synchronized void addObject(GameObject object) {
         toAdd.add(object);
     }
 
     // Queues an object to be removed after current tick
-    public void removeObject(GameObject object) {
+    public synchronized void removeObject(GameObject object) {
         toRemove.add(object);
     }
 
-    // Optional: get current objects
-    public LinkedList<GameObject> getObjects() {
-        return objects;
+    // Always return a copy to avoid concurrent modification
+    public synchronized LinkedList<GameObject> getObjects() {
+        return new LinkedList<>(objects);
     }
 
-    public void setMousePositionForMouse(int mouseX, int mouseY) {
+    public synchronized void setMousePositionForMouse(int mouseX, int mouseY) {
         for (GameObject obj : objects) {
             if (obj.getID() == ID.MOUSE) {
                 obj.setMouseX(mouseX);
@@ -59,7 +58,7 @@ public class Handler {
         }
     }
 
-    public void resetMousePosition() {
+    public synchronized void resetMousePosition() {
         for (GameObject obj : objects) {
             if (obj.getID() == ID.MOUSE) {
                 obj.setMouseX(0);
@@ -67,5 +66,4 @@ public class Handler {
             }
         }
     }
-
 }

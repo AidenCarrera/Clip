@@ -18,8 +18,6 @@ public class Game extends Canvas implements Runnable {
 
     @Serial
     private static final long serialVersionUID = 1550691097823471818L;
-    public static final int WIDTH = 2560;
-    public static final int HEIGHT = 1440;
     private static final double UPDATE_CAP = 1.0 / 165.0;
 
     private Thread thread;
@@ -29,6 +27,8 @@ public class Game extends Canvas implements Runnable {
     private final Handler handler;
     private final HUD hud;
     private final GameManager gameManager;
+    private final ConfigManager config;
+    private final double autoSaveInterval; // from config
 
     private BufferedImage levelImage = null;
     private final BufferedImage dog;
@@ -40,35 +40,48 @@ public class Game extends Canvas implements Runnable {
     private STATE gameState = STATE.Menu;
 
     static void main() {
-        new Game();
+        ConfigManager config = new ConfigManager("assets/config.json");
+        config.load();
+        new Game(config);
     }
 
-    public Game() {
+    public Game(ConfigManager config) {
+        // Load configuration before anything else
+        this.config = config;
+
+        // Set dynamic window dimensions
+        int width = config.displayWidth;
+        int height = config.displayHeight;
+
         loader = new BufferedImageLoader();
         setLevelImage("/images/menu.png");
 
-        // Set custom cursor
+        // --- Set custom cursor ---
         Image cursorImg = new ImageIcon(
-                Objects.requireNonNull(getClass().getResource("/images/cursor.png"))
-        ).getImage();
+                Objects.requireNonNull(getClass().getResource("/images/cursor.png")))
+                .getImage();
         setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "Cursor"));
 
         handler = new Handler();
 
-        // --- GameManager and Spawner ---
-        gameManager = new GameManager(handler);
+        // --- GameManager and Spawner use config ---
+        gameManager = new GameManager(handler, config);
 
-        hud = new HUD(gameManager);   // HUD
+        hud = new HUD(gameManager, config);
 
-        // --- Mouse ---
-        Mouse mouse = new Mouse(0, 0, ID.MOUSE, handler, this, hud);
+        // --- Mouse setup ---
+        Mouse mouse = new Mouse(0, 0, ID.MOUSE, handler, this, hud, config);
         handler.addObject(mouse);
         this.addMouseListener(mouse);
         this.addMouseMotionListener(mouse);
 
-        new Window(WIDTH, HEIGHT, "Paperclip Collector", this);
+        // --- Create window using THIS Game instance ---
+        new Window(this, config);
 
-        SoundHandler.runMusic();
+        // --- Audio ---
+        SoundHandler.runMusic(config.musicVolume, config.soundEffectsVolume);
+
+        // --- Load dog image ---
         dog = loader.loadImage("/images/dog.png");
 
         // --- Menu buttons ---
@@ -76,11 +89,10 @@ public class Game extends Canvas implements Runnable {
         Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE);
         Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT);
 
-        newGameBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 2);
-        continueBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 1);
-        exitBtn.updatePosition(Game.WIDTH, Game.HEIGHT, 0);
+        newGameBtn.updatePosition(width, height, 2);
+        continueBtn.updatePosition(width, height, 1);
+        exitBtn.updatePosition(width, height, 0);
 
-        // Set buttons invisible initially
         newGameBtn.setVisible(false);
         continueBtn.setVisible(false);
         exitBtn.setVisible(false);
@@ -88,6 +100,9 @@ public class Game extends Canvas implements Runnable {
         handler.addObject(newGameBtn);
         handler.addObject(continueBtn);
         handler.addObject(exitBtn);
+
+        // --- Auto-save interval from config ---
+        autoSaveInterval = config.autoSaveIntervalSeconds;
     }
 
     // --- Game state getters/setters ---
@@ -95,14 +110,10 @@ public class Game extends Canvas implements Runnable {
     public void setGameState(STATE gameState) { this.gameState = gameState; }
     public void setLevelImage(String path) { levelImage = loader.loadImage(path); }
 
-    public GameManager getGameManager() {
-        return gameManager;
-    }
-
+    public GameManager getGameManager() { return gameManager; }
 
     // --- Game loop ---
-    private double autoSaveTimer = 0;                     // Tracks time for periodic auto-save
-    private static final double AUTO_SAVE_INTERVAL = 15; // Auto-save interval in seconds
+    private double autoSaveTimer = 0;
 
     public synchronized void start() {
         if (running) return;
@@ -150,10 +161,10 @@ public class Game extends Canvas implements Runnable {
                     frames = 0;
                     System.out.println(fps + " FPS");
 
-                    // --- Auto-save every interval ---
+                    // ✅ Auto-save interval from config
                     if (gameState == STATE.Game) {
-                        autoSaveTimer += 1.0; // increment roughly every second
-                        if (autoSaveTimer >= AUTO_SAVE_INTERVAL) {
+                        autoSaveTimer += 1.0;
+                        if (autoSaveTimer >= autoSaveInterval) {
                             gameManager.saveGame();
                             autoSaveTimer = 0;
                             System.out.println("Auto-saved game.");
@@ -193,7 +204,6 @@ public class Game extends Canvas implements Runnable {
             }
         }
 
-        // Tick game logic
         if (gameState == STATE.Game) {
             gameManager.tick();
             hud.tick();

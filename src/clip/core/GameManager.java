@@ -5,12 +5,12 @@ import clip.save.SaveManager;
 
 import java.util.Random;
 
-// Central manager for game state, upgrades, and saving/loading
 public class GameManager {
     private final Handler handler;
     private final SaveManager saveManager;
     private final Spawner spawner;
     private final Random random;
+    private final ConfigManager config;
 
     // Game state
     private int clips;
@@ -21,24 +21,25 @@ public class GameManager {
     private int valueUpgradeCount;
     private int moreUpgradeCount;
 
-    public GameManager(Handler handler) {
+    public GameManager(Handler handler, ConfigManager config) {
         this.handler = handler;
+        this.config = config;
         this.saveManager = new SaveManager("data/save.json");
         this.random = new Random();
-        this.spawner = new Spawner(handler, random);
+        this.spawner = new Spawner(handler, random, config);
 
-        startNewGame();
+        // Don't start a new game here—only load or start explicitly
     }
 
     // --- Game control ---
     public void startNewGame() {
         System.out.println("Game Restarted");
 
-        clips = 0;
+        clips = config.startClips;
         currentClipCount = 0;
-        maxClipCount = 25;
+        maxClipCount = config.maxClipCount;
 
-        coloredUpgrade = ColorTier.NONE; // start with no upgrade
+        coloredUpgrade = ColorTier.NONE;
         valueUpgradeCount = 0;
         moreUpgradeCount = 0;
 
@@ -54,42 +55,61 @@ public class GameManager {
             System.out.println("No save found — starting new game.");
             startNewGame();
         }
-        // No recalculation needed — prices are dynamic now
     }
 
     public void saveGame() {
         saveManager.save(this);
     }
 
-    public Spawner getSpawner() { return spawner; }
-    public Random getRandom() { return random; }
-
     // --- Gameplay actions ---
     public void collectClip(GameObject clip) {
-        int value = switch (clip.getID()) {
-            case PAPERCLIP -> 1;
-            case RED_PAPERCLIP -> 5;
-            case GREEN_PAPERCLIP -> 25;
-            case BLUE_PAPERCLIP -> 100;
-            case PURPLE_PAPERCLIP -> 1000;
-            case YELLOW_PAPERCLIP -> 10000;
+        int baseValue = switch (clip.getID()) {
+            case PAPERCLIP -> config.paperclipBaseValue;
+            case RED_PAPERCLIP -> config.paperclipBaseValue * 5;
+            case GREEN_PAPERCLIP -> config.paperclipBaseValue * 25;
+            case BLUE_PAPERCLIP -> config.paperclipBaseValue * 100;
+            case PURPLE_PAPERCLIP -> config.paperclipBaseValue * 1000;
+            case YELLOW_PAPERCLIP -> config.paperclipBaseValue * 10000;
             default -> 0;
         };
 
-        clips += value * (valueUpgradeCount + 1);
+        clips += baseValue * (valueUpgradeCount + 1);
         currentClipCount--;
         handler.removeObject(clip);
+    }
+
+    // --- Upgrade prices ---
+    public int getColoredUpgradePrice(ColorTier tier) {
+        return switch (tier) {
+            case RED -> config.redUpgradeCost;
+            case GREEN -> config.greenUpgradeCost;
+            case BLUE -> config.blueUpgradeCost;
+            case PURPLE -> config.purpleUpgradeCost;
+            case YELLOW -> config.yellowUpgradeCost;
+            default -> 0;
+        };
+    }
+
+    public int getValueUpgradePrice() {
+        return (int) (config.valueUpgradeBaseCost * Math.pow(config.upgradeCostMultiplier, valueUpgradeCount));
+    }
+
+    public int getMoreUpgradePrice() {
+        return (int) (config.moreUpgradeBaseCost * Math.pow(config.upgradeCostMultiplier, moreUpgradeCount));
     }
 
     // --- Upgrade methods ---
     public void buyColoredUpgradeFromHUD() {
         ColorTier nextTier = coloredUpgrade.next();
-        if (nextTier != null && clips >= nextTier.getValue()) {
-            clips -= nextTier.getValue();
-            coloredUpgrade = nextTier;
-            System.out.println("Bought colored upgrade: " + nextTier);
-        } else {
-            System.out.println("Not enough clips for colored upgrade.");
+        if (nextTier != null) {
+            int price = getColoredUpgradePrice(nextTier);
+            if (clips >= price) {
+                clips -= price;
+                coloredUpgrade = nextTier;
+                System.out.println("Bought " + nextTier + " upgrade for " + price + " clips");
+            } else {
+                System.out.println("Not enough clips for " + nextTier + ". Price: " + price);
+            }
         }
     }
 
@@ -116,32 +136,28 @@ public class GameManager {
         }
     }
 
-    // --- Dynamic price calculation ---
-    public int getValueUpgradePrice() {
-        return 200 * (int)Math.pow(2, valueUpgradeCount);
-    }
-
-    public int getMoreUpgradePrice() {
-        return 200 + 50 * (int)Math.pow(2, moreUpgradeCount);
-    }
-
     // --- Game ticking / spawning ---
     public void tick() {
         while (currentClipCount < maxClipCount) {
-            double P = 69, redP = 15, greenP = 7.85, blueP = 4.25, purpleP = 2.6, yellowP = 1;
+            double P = 69;
+            double redP = config.redSpawnWeight;
+            double greenP = config.greenSpawnWeight;
+            double blueP = config.blueSpawnWeight;
+            double purpleP = config.purpleSpawnWeight;
+            double yellowP = config.yellowSpawnWeight;
+
             double totalWeight = P + redP + greenP + blueP + purpleP + yellowP;
+            double roll = random.nextDouble() * totalWeight;
 
-            double clipToSpawn = random.nextDouble() * totalWeight;
-
-            if (clipToSpawn < yellowP && coloredUpgrade.ordinal() >= ColorTier.YELLOW.ordinal()) {
+            if (roll < yellowP && coloredUpgrade.ordinal() >= ColorTier.YELLOW.ordinal()) {
                 spawner.spawnClip(ID.YELLOW_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal()) {
+            } else if (roll < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal()) {
                 spawner.spawnClip(ID.PURPLE_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP && coloredUpgrade.ordinal() >= ColorTier.BLUE.ordinal()) {
+            } else if (roll < yellowP + purpleP + blueP && coloredUpgrade.ordinal() >= ColorTier.BLUE.ordinal()) {
                 spawner.spawnClip(ID.BLUE_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP && coloredUpgrade.ordinal() >= ColorTier.GREEN.ordinal()) {
+            } else if (roll < yellowP + purpleP + blueP + greenP && coloredUpgrade.ordinal() >= ColorTier.GREEN.ordinal()) {
                 spawner.spawnClip(ID.GREEN_PAPERCLIP);
-            } else if (clipToSpawn < yellowP + purpleP + blueP + greenP + redP && coloredUpgrade.ordinal() >= ColorTier.RED.ordinal()) {
+            } else if (roll < yellowP + purpleP + blueP + greenP + redP && coloredUpgrade.ordinal() >= ColorTier.RED.ordinal()) {
                 spawner.spawnClip(ID.RED_PAPERCLIP);
             } else {
                 spawner.spawnClip(ID.PAPERCLIP);

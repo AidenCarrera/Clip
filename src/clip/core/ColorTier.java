@@ -1,28 +1,25 @@
 package clip.core;
 
 public enum ColorTier {
-    NONE(0, null, null),      // No upgrade yet
-    RED(100, ID.RED_PAPERCLIP, ID.RED_UPGRADE),
-    GREEN(1_000, ID.GREEN_PAPERCLIP, ID.GREEN_UPGRADE),
-    BLUE(5_000, ID.BLUE_PAPERCLIP, ID.BLUE_UPGRADE),
-    PURPLE(10_000, ID.PURPLE_PAPERCLIP, ID.PURPLE_UPGRADE),
-    YELLOW(50_000, ID.YELLOW_PAPERCLIP, ID.YELLOW_UPGRADE);
+    NONE(null, null),       // No upgrade yet
+    RED(ID.RED_PAPERCLIP, ID.RED_UPGRADE),
+    GREEN(ID.GREEN_PAPERCLIP, ID.GREEN_UPGRADE),
+    BLUE(ID.BLUE_PAPERCLIP, ID.BLUE_UPGRADE),
+    PURPLE(ID.PURPLE_PAPERCLIP, ID.PURPLE_UPGRADE),
+    YELLOW(ID.YELLOW_PAPERCLIP, ID.YELLOW_UPGRADE);
 
-    private final int value;          // numeric value for save/load
-    private final ID paperclipID;     // the type of paperclip unlocked at this tier
-    private final ID upgradeID;       // the corresponding upgrade object
+    private final ID paperclipID; // The type of paperclip unlocked at this tier
+    private final ID upgradeID;   // The corresponding upgrade object in the HUD
 
-    ColorTier(int value, ID paperclipID, ID upgradeID) {
-        this.value = value;
+    ColorTier(ID paperclipID, ID upgradeID) {
         this.paperclipID = paperclipID;
         this.upgradeID = upgradeID;
     }
 
-    public int getValue() { return value; }
     public ID getPaperclipID() { return paperclipID; }
     public ID getUpgradeID() { return upgradeID; }
 
-    // Get next tier in progression
+    // Get the next tier in progression
     public ColorTier next() {
         int ordinal = this.ordinal();
         ColorTier[] values = ColorTier.values();
@@ -30,11 +27,10 @@ public enum ColorTier {
         return null;
     }
 
-    public static ColorTier fromValue(int value) {
-        ColorTier result = NONE;
-        for (ColorTier tier : ColorTier.values()) {
-            if (value >= tier.value) result = tier;
-        }
-        return result;
+    // Optional: get previous tier if needed
+    public ColorTier previous() {
+        int ordinal = this.ordinal();
+        if (ordinal > 0) return ColorTier.values()[ordinal - 1];
+        return null;
     }
 }

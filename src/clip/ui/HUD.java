@@ -1,6 +1,7 @@
 package clip.ui;
 
 import clip.core.ColorTier;
+import clip.core.ConfigManager;
 import clip.core.GameManager;
 import clip.core.ID;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
 
 public class HUD implements MouseListener {
 
+    private final ConfigManager config;
     private final GameManager gameManager;
 
     private final Image clipIcon;
@@ -33,10 +35,10 @@ public class HUD implements MouseListener {
     // Sizes
     private static final int IMAGE_SIZE = 70;   // drawn image size
     private static final int HITBOX_SIZE = 60;  // clickable area size
-    private static final int HITBOX_PADDING = 10;
 
-    public HUD(GameManager gameManager) {
+    public HUD(GameManager gameManager, ConfigManager config) {
         this.gameManager = gameManager;
+        this.config = config;
 
         clipIcon = load("/images/clipIcon.png");
         bamboo = load("/images/bamboo.png");
@@ -50,10 +52,9 @@ public class HUD implements MouseListener {
         upgradeImages.put(ID.VALUE_UPGRADE, load("/images/valueUpgrade.png"));
         upgradeImages.put(ID.MORE_UPGRADE, load("/images/moreUpgrade.png"));
 
-        // Define static rectangles for upgrades
+        // Static upgrade rectangles
         upgradeRects.put(ID.VALUE_UPGRADE, new Rectangle(VALUE_X, VALUE_Y, HITBOX_SIZE, HITBOX_SIZE));
         upgradeRects.put(ID.MORE_UPGRADE, new Rectangle(MORE_X, MORE_Y, HITBOX_SIZE, HITBOX_SIZE));
-        // Colored upgrade rectangle will be dynamic
     }
 
     private Image load(String path) {
@@ -61,7 +62,7 @@ public class HUD implements MouseListener {
     }
 
     public void tick() {
-        // Optional animations
+        // Optional: animations or effects
     }
 
     public void render(Graphics g) {
@@ -69,35 +70,43 @@ public class HUD implements MouseListener {
         g.setFont(mainFont);
         g.setColor(textColor);
 
-//        // Optional: debug hitboxes
-//        g.setColor(new Color(255, 0, 0, 128));
-//        for (Rectangle rect : upgradeRects.values()) {
-//            g.drawRect(rect.x, rect.y, rect.width, rect.height);
-//        }
-
         // Clip counter
         drawIconWithValue(g, clipIcon, 62, 80, gameManager.getClips());
 
-        // Draw upgrades in unified way
-        drawUpgrade(g, gameManager.getColoredUpgrade() != null ? gameManager.getColoredUpgrade().next() : ColorTier.RED,
-                COLORED_X);
-        drawUpgrade(g, ID.VALUE_UPGRADE, VALUE_X, VALUE_Y, gameManager.getValueUpgradePrice(), gameManager.getValueUpgradeCount());
-        drawUpgrade(g, ID.MORE_UPGRADE, MORE_X, MORE_Y, gameManager.getMoreUpgradePrice(), gameManager.getMoreUpgradeCount());
+        // Draw upgrades
+        drawColoredUpgrade(g, COLORED_X, COLORED_Y);
+        drawGenericUpgrade(g, ID.VALUE_UPGRADE, VALUE_X, VALUE_Y,
+                gameManager.getValueUpgradePrice(), gameManager.getValueUpgradeCount());
+        drawGenericUpgrade(g, ID.MORE_UPGRADE, MORE_X, MORE_Y,
+                gameManager.getMoreUpgradePrice(), gameManager.getMoreUpgradeCount());
     }
 
-    private void drawUpgrade(Graphics g, ColorTier tier, int x) {
-        if (tier == null || tier.getUpgradeID() == null) return;
+    private void drawColoredUpgrade(Graphics g, int x, int y) {
+        ColorTier nextTier = gameManager.getColoredUpgrade() != null ? gameManager.getColoredUpgrade().next() : ColorTier.RED;
+        if (nextTier == null || nextTier.getUpgradeID() == null) return;
 
-        Image img = upgradeImages.get(tier.getUpgradeID());
+        Image img = upgradeImages.get(nextTier.getUpgradeID());
         if (img == null) return;
 
-        g.drawImage(img, x, COLORED_Y, IMAGE_SIZE, IMAGE_SIZE, null);
-        drawIconWithValue(g, clipIcon, x, COLORED_Y, tier.getValue());
+        int cost = getUpgradeCost(nextTier);
+        g.drawImage(img, x, y, IMAGE_SIZE, IMAGE_SIZE, null);
+        drawIconWithValue(g, clipIcon, x, y, cost);
 
-        upgradeRects.put(tier.getUpgradeID(), new Rectangle(x, COLORED_Y, HITBOX_SIZE, HITBOX_SIZE));
+        upgradeRects.put(nextTier.getUpgradeID(), new Rectangle(x, y, HITBOX_SIZE, HITBOX_SIZE));
     }
 
-    private void drawUpgrade(Graphics g, ID id, int x, int y, int price, int count) {
+    private int getUpgradeCost(ColorTier tier) {
+        return switch (tier) {
+            case RED -> config.redUpgradeCost;
+            case GREEN -> config.greenUpgradeCost;
+            case BLUE -> config.blueUpgradeCost;
+            case PURPLE -> config.purpleUpgradeCost;
+            case YELLOW -> config.yellowUpgradeCost;
+            default -> 0;
+        };
+    }
+
+    private void drawGenericUpgrade(Graphics g, ID id, int x, int y, int price, int count) {
         Image img = upgradeImages.get(id);
         if (img == null) return;
 

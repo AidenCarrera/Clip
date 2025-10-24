@@ -2,13 +2,15 @@
   "game": {
     "startClips": 0,
     "maxClipCount": 25,
-    "coloredUpgradeStart": 100,
-    "autoSaveIntervalSeconds": 15
+    "spawnRate": 1.5,
+    "upgradeCostMultiplier": 1.2
   },
   "upgrades": {
     "redUpgradeCost": 100,
-    "greenUpgradeCost": 500,
-    "blueUpgradeCost": 1000
+    "greenUpgradeCost": 1000,
+    "blueUpgradeCost": 10000,
+    "purpleUpgradeCost": 150000,
+    "yellowUpgradeCost": 650000
   },
   "audio": {
     "musicVolume": 0.3,
@@ -18,5 +20,22 @@
     "width": 2560,
     "height": 1440,
     "fullscreen": true
+  },
+  "system": {
+    "autoSaveIntervalSeconds": 15,
+    "maxSaveFiles": 5,
+    "debugMode": false
+  },
+  "paperclips": {
+    "baseValue": 1,
+    "rareSpawnChance": 0.05,
+    "colorSpawnWeights": {
+      "basic": 69,
+      "red": 15,
+      "green": 7.85,
+      "blue": 4.25,
+      "purple": 2.6,
+      "yellow": 1
+    }
   }
 }

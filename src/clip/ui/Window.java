@@ -1,5 +1,6 @@
 package clip.ui;
 
+import clip.core.ConfigManager;
 import clip.core.Game;
 
 import javax.swing.*;
@@ -13,31 +14,35 @@ public class Window extends Canvas {
     @Serial
     private static final long serialVersionUID = -240840600533728354L;
 
-    public Window(int width, int height, String title, Game game) {
-        JFrame frame = new JFrame(title);
+    public Window(Game game, ConfigManager config) {
+        JFrame frame = new JFrame("Nibs’ Paperclip Collector");
 
-        // --- Fullscreen setup ---
-        frame.setUndecorated(true); // removes title bar and borders
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // maximizes window to fill the screen
+        // --- Apply display settings from config ---
+        if (config.fullscreen) {
+            frame.setUndecorated(true);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        } else {
+            frame.setUndecorated(false);
+            frame.setSize(config.displayWidth, config.displayHeight);
+            frame.setLocationRelativeTo(null);
+        }
 
-        // --- Optional fallback if fullscreen fails ---
-        frame.setPreferredSize(new Dimension(width, height));
-        frame.setMinimumSize(new Dimension(width / 2, height / 2));
+        // --- Fallback minimums ---
+        frame.setPreferredSize(new Dimension(config.displayWidth, config.displayHeight));
+        frame.setMinimumSize(new Dimension(config.displayWidth / 2, config.displayHeight / 2));
 
-        // --- Window close handling ---
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // prevent immediate exit
+        // --- Close handling ---
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                // Save game before exit
                 game.getGameManager().saveGame();
                 System.out.println("Game saved on window close.");
                 System.exit(0);
             }
         });
 
-        frame.setResizable(true);
-        frame.setLocationRelativeTo(null);
+        frame.setResizable(!config.fullscreen);
 
         try {
             ImageIcon image = new ImageIcon(Objects.requireNonNull(getClass().getResource("/images/oso.png")));
