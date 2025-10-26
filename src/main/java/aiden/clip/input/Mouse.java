@@ -1,18 +1,18 @@
-package clip.input;
-
-import clip.core.Game;
-import clip.core.GameState;
-import clip.core.GameObject;
-import clip.core.Handler;
-import clip.core.ConfigManager;
-import clip.core.ID;
-import clip.ui.HUD;
-import clip.ui.Menu;
+package aiden.clip.input;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.Game;
+import aiden.clip.core.GameObject;
+import aiden.clip.core.GameState;
+import aiden.clip.core.Handler;
+import aiden.clip.core.ID;
+import aiden.clip.ui.HUD;
+import aiden.clip.ui.Menu;
 
 public class Mouse extends GameObject implements MouseListener, MouseMotionListener {
 
@@ -77,6 +77,9 @@ public class Mouse extends GameObject implements MouseListener, MouseMotionListe
                         game.getGameManager().continueGame();
                     }
                     case EXIT -> System.exit(0);
+                    default -> {
+                        /* do nothing */
+                    }
                 }
 
                 // Remove menu buttons if starting/continuing game

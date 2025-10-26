@@ -1,10 +1,10 @@
-package clip.ui;
-
-import clip.core.GameObject;
-import clip.core.ID;
-import clip.core.ConfigManager;
+package aiden.clip.ui;
 
 import java.awt.*;
+
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.GameObject;
+import aiden.clip.core.ID;
 
 public class Menu extends GameObject {
 

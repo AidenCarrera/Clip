@@ -1,14 +1,13 @@
-package clip.core;
+package aiden.clip.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class ConfigManager {
 
-    private final String path;
     private final ObjectMapper mapper;
 
     // --- Current config values exposed ---
@@ -45,8 +44,7 @@ public class ConfigManager {
     public double purpleSpawnWeight;
     public double yellowSpawnWeight;
 
-    public ConfigManager(String path) {
-        this.path = path;
+    public ConfigManager() {
         this.mapper = new ObjectMapper();
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty print JSON
     }
@@ -112,36 +110,34 @@ public class ConfigManager {
         public PaperclipsConfig paperclips = new PaperclipsConfig();
     }
 
+    // --- Load config from classpath or use defaults ---
     public void load() {
-        File file = new File(path);
         ConfigRoot data;
-
-        if (!file.exists()) {
-            System.out.println("Config file not found, creating default config.");
-            data = new ConfigRoot(); // defaults
-            saveDefaults(file, data);
-        } else {
-            try {
-                data = mapper.readValue(file, ConfigRoot.class);
-            } catch (IOException e) {
-                System.out.println("Failed to read config file, using defaults.");
-                e.printStackTrace();
-                data = new ConfigRoot();
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("config.json")) {
+            if (is != null) {
+                data = mapper.readValue(is, ConfigRoot.class);
+                System.out.println("Config loaded from classpath resource.");
+            } else {
+                System.out.println("Config not found in resources, using defaults.");
+                data = createDefaults();
             }
+        } catch (IOException e) {
+            System.out.println("Failed to read config, using defaults.");
+            e.printStackTrace();
+            data = createDefaults();
         }
 
         applyConfig(data);
         System.out.println("Config loaded successfully.");
     }
 
+    // --- Apply config values to fields ---
     private void applyConfig(ConfigRoot data) {
-        // --- Apply game values ---
         startClips = data.game.startClips;
         maxClipCount = data.game.maxClipCount;
         spawnRate = data.game.spawnRate;
         upgradeCostMultiplier = data.game.upgradeCostMultiplier;
 
-        // --- Apply upgrades ---
         redUpgradeCost = data.upgrades.redUpgradeCost;
         greenUpgradeCost = data.upgrades.greenUpgradeCost;
         blueUpgradeCost = data.upgrades.blueUpgradeCost;
@@ -150,23 +146,19 @@ public class ConfigManager {
         valueUpgradeBaseCost = data.upgrades.valueUpgradeBaseCost;
         moreUpgradeBaseCost = data.upgrades.moreUpgradeBaseCost;
 
-        // --- Apply audio ---
         musicVolume = data.audio.musicVolume;
         soundEffectsVolume = data.audio.soundEffectsVolume;
 
-        // --- Apply display ---
         hudScale = data.display.hudScale;
         displayWidth = data.display.width;
         displayHeight = data.display.height;
         fullscreen = data.display.fullscreen;
 
-        // --- Apply system ---
         autoSaveIntervalSeconds = data.system.autoSaveIntervalSeconds;
         maxSaveFiles = data.system.maxSaveFiles;
         debugMode = data.system.debugMode;
         clickTolerance = data.system.clickTolerance;
 
-        // --- Apply paperclips ---
         paperclipBaseValue = data.paperclips.baseValue;
         basicPaperclipWeight = data.paperclips.colorSpawnWeights.basic;
         redSpawnWeight = data.paperclips.colorSpawnWeights.red;
@@ -176,13 +168,8 @@ public class ConfigManager {
         yellowSpawnWeight = data.paperclips.colorSpawnWeights.yellow;
     }
 
-    private void saveDefaults(File file, ConfigRoot data) {
-        try {
-            mapper.writeValue(file, data);
-            System.out.println("Default config created at " + file.getAbsolutePath());
-        } catch (IOException e) {
-            System.out.println("Failed to write default config.");
-            e.printStackTrace();
-        }
+    // --- Return defaults in memory ---
+    private ConfigRoot createDefaults() {
+        return new ConfigRoot();
     }
 }

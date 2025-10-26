@@ -1,9 +1,9 @@
-package clip.audio;
+package aiden.clip.audio;
 
 import javax.sound.sampled.*;
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 
 /**
  * Handles background music playback for the game.
@@ -20,14 +20,15 @@ public class SoundHandler {
      */
     public static void runMusic(double musicVolume, double sfxVolume) {
         try {
-            var resource = SoundHandler.class.getResource("/audio/music.wav");
-            if (resource == null) {
+            InputStream resourceStream = SoundHandler.class.getResourceAsStream("/audio/music.wav");
+            if (resourceStream == null) {
                 System.err.println("Audio file not found: /audio/music.wav");
                 return;
             }
 
-            // Load and open the clip
-            try (AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(resource.toURI()))) {
+            // Wrap in BufferedInputStream to ensure mark/reset support
+            try (AudioInputStream inputStream = AudioSystem
+                    .getAudioInputStream(new BufferedInputStream(resourceStream))) {
                 musicClip = AudioSystem.getClip();
                 musicClip.open(inputStream);
 
@@ -49,7 +50,8 @@ public class SoundHandler {
                 System.out.printf("Music started with volume %.2f dB (%.2f%%). SFX volume = %.2f%%%n",
                         dB, volume * 100, sfxVolume * 100);
             }
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | URISyntaxException e) {
+
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }

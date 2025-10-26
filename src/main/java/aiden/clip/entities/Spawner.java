@@ -1,10 +1,10 @@
-package clip.entities;
-
-import clip.core.ConfigManager;
-import clip.core.Handler;
-import clip.core.ID;
+package aiden.clip.entities;
 
 import java.util.Random;
+
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.Handler;
+import aiden.clip.core.ID;
 
 public class Spawner {
     private final Handler handler;
