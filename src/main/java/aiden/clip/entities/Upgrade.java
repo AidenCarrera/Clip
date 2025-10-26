@@ -1,10 +1,10 @@
-package clip.entities;
-
-import clip.core.GameObject;
-import clip.core.ID;
-import clip.core.ConfigManager;
+package aiden.clip.entities;
 
 import java.awt.*;
+
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.GameObject;
+import aiden.clip.core.ID;
 
 public class Upgrade extends GameObject {
 

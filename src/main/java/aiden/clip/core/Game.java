@@ -1,13 +1,14 @@
-package clip.core;
-
-import clip.audio.SoundHandler;
-import clip.input.Mouse;
-import clip.ui.HUD;
-import clip.ui.Menu;
-import clip.ui.Window;
-import clip.util.BufferedImageLoader;
+package aiden.clip.core;
 
 import javax.swing.*;
+
+import aiden.clip.audio.SoundHandler;
+import aiden.clip.input.Mouse;
+import aiden.clip.ui.HUD;
+import aiden.clip.ui.Menu;
+import aiden.clip.ui.Window;
+import aiden.clip.util.BufferedImageLoader;
+
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -34,10 +35,27 @@ public class Game extends Canvas implements Runnable {
 
     private GameState gameState = GameState.MENU;
 
-    static void main() {
-        ConfigManager config = new ConfigManager("assets/config.json");
-        config.load();
-        new Game(config);
+    public static void main(String[] args) {
+        System.out.println("Game starting...");
+
+        try {
+            ConfigManager config = new ConfigManager();
+            config.load();
+
+            new Game(config); // run the game
+
+            System.out.println("Game initialized successfully.");
+        } catch (Throwable e) {
+            // print stack trace in console
+            e.printStackTrace();
+
+            // show a popup for GUI users
+            javax.swing.SwingUtilities.invokeLater(() -> javax.swing.JOptionPane.showMessageDialog(
+                    null,
+                    "Error starting game: " + e,
+                    "Game Crash",
+                    javax.swing.JOptionPane.ERROR_MESSAGE));
+        }
     }
 
     public Game(ConfigManager config) {

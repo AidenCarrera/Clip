@@ -1,9 +1,10 @@
-package clip.ui;
-
-import clip.core.ConfigManager;
-import clip.core.Game;
+package aiden.clip.ui;
 
 import javax.swing.*;
+
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.Game;
+
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -36,7 +37,7 @@ public class Window extends Canvas {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (game.getGameState() == clip.core.GameState.GAME) {
+                if (game.getGameState() == aiden.clip.core.GameState.GAME) {
                     game.getGameManager().saveGame();
                     System.out.println("Game saved on window close.");
                 } else {

@@ -1,4 +1,4 @@
-package clip.util;
+package aiden.clip.util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

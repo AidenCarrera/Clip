@@ -1,4 +1,4 @@
-package clip.save;
+package aiden.clip.save;
 
 public class GameSaveData {
     public int clips;

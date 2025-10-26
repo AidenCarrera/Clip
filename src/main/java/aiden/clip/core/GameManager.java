@@ -1,13 +1,13 @@
-package clip.core;
-
-import clip.entities.Spawner;
-import clip.entities.Upgrade;
-import clip.save.SaveManager;
-import clip.ui.Menu;
+package aiden.clip.core;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import aiden.clip.entities.Spawner;
+import aiden.clip.entities.Upgrade;
+import aiden.clip.save.SaveManager;
+import aiden.clip.ui.Menu;
 
 public class GameManager {
 
@@ -35,7 +35,7 @@ public class GameManager {
     public GameManager(Handler handler, ConfigManager config) {
         this.handler = handler;
         this.config = config;
-        this.saveManager = new SaveManager("data/save.json");
+        this.saveManager = new SaveManager();
         this.random = new Random();
         this.spawner = new Spawner(handler, random, config);
 

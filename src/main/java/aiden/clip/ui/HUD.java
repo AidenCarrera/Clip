@@ -1,11 +1,12 @@
-package clip.ui;
-
-import clip.core.ColorTier;
-import clip.core.ConfigManager;
-import clip.core.GameManager;
-import clip.core.ID;
+package aiden.clip.ui;
 
 import javax.swing.*;
+
+import aiden.clip.core.ColorTier;
+import aiden.clip.core.ConfigManager;
+import aiden.clip.core.GameManager;
+import aiden.clip.core.ID;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
