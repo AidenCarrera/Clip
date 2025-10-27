@@ -1,41 +1,40 @@
 # ----------------------------------------
-# IntelliJ IDEA files
+# IntelliJ IDEA and VS Code files
 # ----------------------------------------
 .idea/
 *.iml
 *.iws
-
-# ----------------------------------------
-# VS Code files
-# ----------------------------------------
 .vscode/
 
 # ----------------------------------------
 # Maven build output
 # ----------------------------------------
 /target/
+/out/
+/lib/
 dependency-reduced-pom.xml
+.mvn/timing.properties
 
 # ----------------------------------------
-# Operating system junk
+# OS junk
 # ----------------------------------------
 .DS_Store
 Thumbs.db
 
 # ----------------------------------------
-# Temporary or user files
+# Logs and temp files
 # ----------------------------------------
 *.log
 *.tmp
 
 # ----------------------------------------
-# Game save data or player-specific files
+# Game data
 # ----------------------------------------
 /data/
 *.save
 
 # ----------------------------------------
-# Compiled files
+# Compiled Java files
 # ----------------------------------------
 *.class
 
