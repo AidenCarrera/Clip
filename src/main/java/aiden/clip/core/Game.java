@@ -1,7 +1,6 @@
 package aiden.clip.core;
 
 import javax.swing.*;
-
 import aiden.clip.audio.SoundHandler;
 import aiden.clip.input.Mouse;
 import aiden.clip.ui.HUD;
@@ -28,12 +27,18 @@ public class Game extends Canvas implements Runnable {
     private final Handler handler;
     private final HUD hud;
     private final GameManager gameManager;
-    private final double autoSaveInterval; // from config
-
+    private final double autoSaveInterval;
     private BufferedImage levelImage = null;
     private final BufferedImage dog;
 
     private GameState gameState = GameState.MENU;
+
+    // Scaling factors
+    private final float windowScaleX;
+    private final float windowScaleY;
+
+    // Config field now accessible anywhere
+    private final ConfigManager config;
 
     public static void main(String[] args) {
         System.out.println("Game starting...");
@@ -41,15 +46,10 @@ public class Game extends Canvas implements Runnable {
         try {
             ConfigManager config = new ConfigManager();
             config.load();
-
-            new Game(config); // run the game
-
+            new Game(config);
             System.out.println("Game initialized successfully.");
         } catch (Throwable e) {
-            // print stack trace in console
             e.printStackTrace();
-
-            // show a popup for GUI users
             javax.swing.SwingUtilities.invokeLater(() -> javax.swing.JOptionPane.showMessageDialog(
                     null,
                     "Error starting game: " + e,
@@ -59,34 +59,36 @@ public class Game extends Canvas implements Runnable {
     }
 
     public Game(ConfigManager config) {
-
-        // Set dynamic window dimensions
-        int width = config.displayWidth;
-        int height = config.displayHeight;
+        this.config = config;
 
         loader = new BufferedImageLoader();
         setLevelImage("/images/menu.png");
 
-        // --- Set custom cursor ---
-        Image cursorImg = new ImageIcon(
-                Objects.requireNonNull(getClass().getResource("/images/cursor.png")))
-                .getImage();
-        setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "Cursor"));
+        // --- Detect actual screen size ---
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int actualWidth = screenSize.width;
+        int actualHeight = screenSize.height;
 
+        // --- Compute scaling factors ---
+        windowScaleX = (float) actualWidth / config.displayWidth;
+        windowScaleY = (float) actualHeight / config.displayHeight;
+
+        // --- Handler ---
         handler = new Handler();
+        
+        // --- GameManager ---
+        gameManager = new GameManager(handler, config, windowScaleX, windowScaleY);
 
-        // --- GameManager and Spawner use config ---
-        gameManager = new GameManager(handler, config);
+        // --- HUD ---
+        hud = new HUD(gameManager, config, windowScaleX, windowScaleY); // HUD constructor must accept scaleX/scaleY
 
-        hud = new HUD(gameManager, config);
-
-        // --- Mouse setup ---
+        // --- Mouse ---
         Mouse mouse = new Mouse(0, 0, ID.MOUSE, handler, this, hud, config);
         handler.addObject(mouse);
         this.addMouseListener(mouse);
         this.addMouseMotionListener(mouse);
 
-        // --- Create window using THIS Game instance ---
+        // --- Window ---
         new Window(this, config);
 
         // --- Audio ---
@@ -100,30 +102,58 @@ public class Game extends Canvas implements Runnable {
         Menu continueBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.CONTINUE, config);
         Menu exitBtn = new Menu(0.07f, 0.15f, 0.07f, 0.01f, ID.EXIT, config);
 
-        newGameBtn.updatePosition(width, height, 2);
-        continueBtn.updatePosition(width, height, 1);
-        exitBtn.updatePosition(width, height, 0);
+        newGameBtn.updatePosition((int) (config.displayWidth * windowScaleX),
+                (int) (config.displayHeight * windowScaleY), 2);
+        continueBtn.updatePosition((int) (config.displayWidth * windowScaleX),
+                (int) (config.displayHeight * windowScaleY), 1);
+        exitBtn.updatePosition((int) (config.displayWidth * windowScaleX),
+                (int) (config.displayHeight * windowScaleY), 0);
 
         handler.addObject(newGameBtn);
         handler.addObject(continueBtn);
         handler.addObject(exitBtn);
 
-        // --- Auto-save interval from config ---
+        // --- Auto-save interval ---
         autoSaveInterval = config.autoSaveIntervalSeconds;
+
+        // --- Set custom cursor ---
+        Image cursorImg = new ImageIcon(
+                Objects.requireNonNull(getClass().getResource("/images/cursor.png")))
+                .getImage();
+        setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "Cursor"));
     }
 
     // --- Game state getters/setters ---
-    public GameState getGameState() { return gameState; }
-    public void setGameState(GameState gameState) { this.gameState = gameState; }
-    public void setLevelImage(String path) { levelImage = loader.loadImage(path); }
+    public GameState getGameState() {
+        return gameState;
+    }
 
-    public GameManager getGameManager() { return gameManager; }
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    public void setLevelImage(String path) {
+        levelImage = loader.loadImage(path);
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
+    public float getWindowScaleX() {
+        return windowScaleX;
+    }
+
+    public float getWindowScaleY() {
+        return windowScaleY;
+    }
 
     // --- Game loop ---
     private double autoSaveTimer = 0;
 
     public synchronized void start() {
-        if (running) return;
+        if (running)
+            return;
         running = true;
         thread = new Thread(this);
         thread.start();
@@ -132,7 +162,8 @@ public class Game extends Canvas implements Runnable {
     public synchronized void stop() {
         running = false;
         try {
-            if (thread != null) thread.join();
+            if (thread != null)
+                thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -168,7 +199,6 @@ public class Game extends Canvas implements Runnable {
                     frames = 0;
                     System.out.println(fps + " FPS");
 
-                    // Auto-save interval from config
                     if (gameState == GameState.GAME) {
                         autoSaveTimer += 1.0;
                         if (autoSaveTimer >= autoSaveInterval) {
@@ -184,16 +214,17 @@ public class Game extends Canvas implements Runnable {
                 render();
                 frames++;
             } else {
-                try { Thread.sleep(1); } catch (InterruptedException ignored) {}
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ignored) {
+                }
             }
         }
 
-        // Save on exit
         if (gameState == GameState.GAME) {
             gameManager.saveGame();
             System.out.println("Game saved on exit.");
         }
-
         SoundHandler.close();
         stop();
     }
@@ -201,12 +232,13 @@ public class Game extends Canvas implements Runnable {
     private void tick() {
         handler.tick();
 
-        // Update menu button positions only in menu state
         if (gameState == GameState.MENU) {
             int buttonIndex = 2;
             for (GameObject obj : handler.getObjects()) {
                 if (obj instanceof Menu menuButton) {
-                    menuButton.updatePosition(getWidth(), getHeight(), buttonIndex--);
+                    menuButton.updatePosition((int) (config.displayWidth * windowScaleX),
+                            (int) (config.displayHeight * windowScaleY),
+                            buttonIndex--);
                 }
             }
         }
@@ -228,7 +260,7 @@ public class Game extends Canvas implements Runnable {
         g.drawImage(levelImage, 0, 0, getWidth(), getHeight(), null);
 
         if (gameState == GameState.MENU) {
-            g.drawImage(dog, 960, 20, null);
+            g.drawImage(dog, (int) (960 * windowScaleX), (int) (20 * windowScaleY), null);
         } else {
             hud.render(g);
         }

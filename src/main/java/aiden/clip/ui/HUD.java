@@ -1,7 +1,6 @@
 package aiden.clip.ui;
 
 import javax.swing.*;
-
 import aiden.clip.core.ColorTier;
 import aiden.clip.core.ConfigManager;
 import aiden.clip.core.GameManager;
@@ -18,7 +17,9 @@ public class HUD implements MouseListener {
 
     private final ConfigManager config;
     private final GameManager gameManager;
-    private final double scale;
+    private final double windowScaleX;
+    private final double windowScaleY;
+    private final double hudScale;
 
     private final Image clipIcon;
     private final Image bamboo;
@@ -36,15 +37,17 @@ public class HUD implements MouseListener {
     private static final int IMAGE_SIZE = 70;
     private static final int HITBOX_SIZE = 60;
 
-    public HUD(GameManager gameManager, ConfigManager config) {
+    public HUD(GameManager gameManager, ConfigManager config, double windowScaleX, double windowScaleY) {
         this.gameManager = gameManager;
         this.config = config;
-        this.scale = config.hudScale;
+        this.windowScaleX = windowScaleX;
+        this.windowScaleY = windowScaleY;
+        this.hudScale = config.hudScale;
 
         clipIcon = load("/images/clipIcon.png");
         bamboo = load("/images/bamboo.png");
 
-        mainFont = new Font("TimesRoman", Font.BOLD, (int) (20 * scale));
+        mainFont = new Font("TimesRoman", Font.BOLD, (int) (20 * hudScale * Math.min(windowScaleX, windowScaleY)));
 
         // Load upgrade images
         upgradeImages.put(ID.RED_UPGRADE, load("/images/redUpgrade.png"));
@@ -55,15 +58,12 @@ public class HUD implements MouseListener {
         upgradeImages.put(ID.VALUE_UPGRADE, load("/images/valueUpgrade.png"));
         upgradeImages.put(ID.MORE_UPGRADE, load("/images/moreUpgrade.png"));
 
-        // Initial upgrade rectangles (centered on image)
         initHitboxes();
     }
 
     private void initHitboxes() {
         upgradeRects.put(ID.VALUE_UPGRADE, createHitbox(VALUE_X, VALUE_Y));
         upgradeRects.put(ID.MORE_UPGRADE, createHitbox(MORE_X, MORE_Y));
-
-        // Colored upgrades will be dynamically added in drawColoredUpgrade
     }
 
     private Rectangle createHitbox(int baseX, int baseY) {
@@ -77,15 +77,25 @@ public class HUD implements MouseListener {
         return new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
     }
 
-    private int scaledX(int x) { return (int) (x * scale); }
-    private int scaledY(int y) { return (int) (y * scale); }
-    private int scaledSize(int size) { return (int) (size * scale); }
+    private int scaledX(int x) {
+        return (int) (x * hudScale * windowScaleX);
+    }
 
-    public void tick() {}
+    private int scaledY(int y) {
+        return (int) (y * hudScale * windowScaleY);
+    }
+
+    private int scaledSize(int size) {
+        return (int) (size * hudScale * Math.min(windowScaleX, windowScaleY));
+    }
+
+    public void tick() {
+    }
 
     public void render(Graphics g) {
-        // Background
-        g.drawImage(bamboo, 0, 0, (int)(bamboo.getWidth(null) * scale), (int)(bamboo.getHeight(null) * scale), null);
+        // Background stretches to full window
+        g.drawImage(bamboo, 0, 0, (int) (bamboo.getWidth(null) * windowScaleX * hudScale),
+                (int) (bamboo.getHeight(null) * windowScaleY * hudScale), null);
 
         g.setFont(mainFont);
         g.setColor(textColor);
@@ -100,29 +110,29 @@ public class HUD implements MouseListener {
         drawGenericUpgrade(g, ID.MORE_UPGRADE, MORE_X, MORE_Y,
                 gameManager.getMoreUpgradePrice(), gameManager.getMoreUpgradeCount());
 
-        if (config.debugMode) { // only show in debug mode
+        if (config.debugMode) {
             g.setColor(Color.RED);
             for (Rectangle rect : upgradeRects.values()) {
-                if (rect != null) {
+                if (rect != null)
                     g.drawRect(rect.x, rect.y, rect.width, rect.height);
-                }
             }
         }
     }
 
     private void drawColoredUpgrade(Graphics g, int x, int y) {
-        ColorTier nextTier = gameManager.getColoredUpgrade() != null ? gameManager.getColoredUpgrade().next() : ColorTier.RED;
-        if (nextTier == null || nextTier.getUpgradeID() == null) return;
+        ColorTier nextTier = gameManager.getColoredUpgrade() != null ? gameManager.getColoredUpgrade().next()
+                : ColorTier.RED;
+        if (nextTier == null || nextTier.getUpgradeID() == null)
+            return;
 
         Image img = upgradeImages.get(nextTier.getUpgradeID());
-        if (img == null) return;
+        if (img == null)
+            return;
 
         int cost = getUpgradeCost(nextTier);
         g.drawImage(img, scaledX(x), scaledY(y), scaledSize(IMAGE_SIZE), scaledSize(IMAGE_SIZE), null);
-
         drawIconWithValue(g, clipIcon, scaledX(x), scaledY(y), cost);
 
-        // Update hitbox dynamically
         upgradeRects.put(nextTier.getUpgradeID(), createHitbox(x, y));
     }
 
@@ -139,26 +149,33 @@ public class HUD implements MouseListener {
 
     private void drawGenericUpgrade(Graphics g, ID id, int x, int y, int price, int count) {
         Image img = upgradeImages.get(id);
-        if (img == null) return;
+        if (img == null)
+            return;
 
         g.drawImage(img, scaledX(x), scaledY(y), scaledSize(IMAGE_SIZE), scaledSize(IMAGE_SIZE), null);
         drawIconWithValue(g, clipIcon, scaledX(x), scaledY(y), price, count, scaledX(x - 34), scaledY(y + 22));
-
-        // Hitbox already created in initHitboxes
     }
 
     private void drawIconWithValue(Graphics g, Image icon, int x, int y, int value) {
-        g.drawImage(icon, x, y - scaledSize(18), null);
+        // Keep text position like before
         g.drawString(String.valueOf(value), x + scaledSize(20), y + scaledSize(5));
+
+        // Slightly bigger icon, preserve aspect ratio
+        int iconHeight = scaledSize(22);
+        int iconWidth = (int) (icon.getWidth(null) * ((double) iconHeight / icon.getHeight(null)));
+        g.drawImage(icon, x, y - scaledSize(18), iconWidth, iconHeight, null);
     }
 
     private void drawIconWithValue(Graphics g, Image icon, int iconX, int iconY,
-                                   int price, int count, int countX, int countY) {
-        g.drawImage(icon, iconX - scaledSize(5), iconY - scaledSize(20), null);
-
-        // Keep price at original position, prepend count
+            int price, int count, int countX, int countY) {
+        // Keep text placement like before
         String text = "(" + count + ") " + price;
-        g.drawString(text, countX + scaledSize(45), countY - scaledSize(25));  // countX/countY are where the price used to be
+        g.drawString(text, countX + scaledSize(45), countY - scaledSize(25));
+
+        // Slightly bigger icon, preserve aspect ratio
+        int iconHeight = scaledSize(22);
+        int iconWidth = (int) (icon.getWidth(null) * ((double) iconHeight / icon.getHeight(null)));
+        g.drawImage(icon, iconX - scaledSize(5), iconY - scaledSize(20), iconWidth, iconHeight, null);
     }
 
     // ---------------- MouseListener -----------------
@@ -180,8 +197,19 @@ public class HUD implements MouseListener {
         }
     }
 
-    @Override public void mousePressed(MouseEvent e) {}
-    @Override public void mouseReleased(MouseEvent e) {}
-    @Override public void mouseEntered(MouseEvent e) {}
-    @Override public void mouseExited(MouseEvent e) {}
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
 }

@@ -1,9 +1,11 @@
 package aiden.clip.core;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import aiden.clip.entities.Paperclip;
 import aiden.clip.entities.Spawner;
 import aiden.clip.entities.Upgrade;
 import aiden.clip.save.SaveManager;
@@ -16,6 +18,10 @@ public class GameManager {
     private final Spawner spawner;
     private final Random random;
     private final ConfigManager config;
+
+    // Window scaling factors (runtime only)
+    private final float windowScaleX;
+    private final float windowScaleY;
 
     // Game state
     private int clips;
@@ -32,9 +38,11 @@ public class GameManager {
     // Menu buttons
     private List<Menu> menuButtons;
 
-    public GameManager(Handler handler, ConfigManager config) {
+    public GameManager(Handler handler, ConfigManager config, float windowScaleX, float windowScaleY) {
         this.handler = handler;
         this.config = config;
+        this.windowScaleX = windowScaleX;
+        this.windowScaleY = windowScaleY;
         this.saveManager = new SaveManager();
         this.random = new Random();
         this.spawner = new Spawner(handler, random, config);
@@ -47,7 +55,8 @@ public class GameManager {
 
     // --- Menu management ---
     public void showMenuButtons() {
-        if (!menuButtons.isEmpty()) return; // prevent duplicates
+        if (!menuButtons.isEmpty())
+            return; // prevent duplicates
 
         int width = config.displayWidth;
         int height = config.displayHeight;
@@ -64,25 +73,22 @@ public class GameManager {
         menuButtons.add(continueBtn);
         menuButtons.add(exitBtn);
 
-        for (Menu btn : menuButtons) {
+        for (Menu btn : menuButtons)
             handler.addObject(btn);
-        }
     }
 
     public void hideMenuButtons() {
-        for (Menu btn : menuButtons) {
+        for (Menu btn : menuButtons)
             handler.removeObject(btn);
-        }
         menuButtons.clear();
     }
 
     // --- Game control ---
     public void startNewGame() {
         System.out.println("Game Restarted");
-
         state = GameState.GAME;
 
-        hideMenuButtons(); // remove menu buttons when game starts
+        hideMenuButtons();
 
         clips = config.startClips;
         currentClipCount = 0;
@@ -194,9 +200,31 @@ public class GameManager {
 
     // --- Game ticking / spawning ---
     public void tick() {
-        if (state != GameState.GAME) return;
+        if (state != GameState.GAME)
+            return;
 
+        // --- Compute HUD offset (scale applied) ---
+        int hudWidth = (int) (400 * windowScaleX); // horizontal HUD margin
+        int hudHeight = (int) (400 * windowScaleY); // optional vertical HUD margin
+
+        // --- Determine max spawn bounds based on display and window scale ---
+        int maxX = (int) (config.displayWidth * windowScaleX);
+        int maxY = (int) (config.displayHeight * windowScaleY);
+
+        // --- Compute paperclip size dynamically using Paperclip helper ---
+        Dimension clipSize = Paperclip.getScaledSize(config, windowScaleX, windowScaleY);
+        int paperclipWidth = clipSize.width;
+        int paperclipHeight = clipSize.height;
+
+        // --- Spawn bounds with margins ---
+        int spawnMinX = hudWidth;
+        int spawnMinY = 0; // or hudHeight if vertical HUD
+        int spawnMaxX = Math.max(spawnMinX + 1, maxX - paperclipWidth);
+        int spawnMaxY = Math.max(spawnMinY + 1, maxY - paperclipHeight);
+
+        // --- Spawn paperclips while under max count ---
         while (currentClipCount < maxClipCount) {
+            // --- Determine spawn type using weighted random ---
             double P = 69;
             double redP = config.redSpawnWeight;
             double greenP = config.greenSpawnWeight;
@@ -207,49 +235,107 @@ public class GameManager {
             double totalWeight = P + redP + greenP + blueP + purpleP + yellowP;
             double roll = random.nextDouble() * totalWeight;
 
-            if (roll < yellowP && coloredUpgrade.ordinal() >= ColorTier.YELLOW.ordinal()) {
-                spawner.spawnClip(ID.YELLOW_PAPERCLIP);
-            } else if (roll < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal()) {
-                spawner.spawnClip(ID.PURPLE_PAPERCLIP);
-            } else if (roll < yellowP + purpleP + blueP && coloredUpgrade.ordinal() >= ColorTier.BLUE.ordinal()) {
-                spawner.spawnClip(ID.BLUE_PAPERCLIP);
-            } else if (roll < yellowP + purpleP + blueP + greenP && coloredUpgrade.ordinal() >= ColorTier.GREEN.ordinal()) {
-                spawner.spawnClip(ID.GREEN_PAPERCLIP);
-            } else if (roll < yellowP + purpleP + blueP + greenP + redP && coloredUpgrade.ordinal() >= ColorTier.RED.ordinal()) {
-                spawner.spawnClip(ID.RED_PAPERCLIP);
-            } else {
-                spawner.spawnClip(ID.PAPERCLIP);
-            }
+            ID spawnType;
+            if (roll < yellowP && coloredUpgrade.ordinal() >= ColorTier.YELLOW.ordinal())
+                spawnType = ID.YELLOW_PAPERCLIP;
+            else if (roll < yellowP + purpleP && coloredUpgrade.ordinal() >= ColorTier.PURPLE.ordinal())
+                spawnType = ID.PURPLE_PAPERCLIP;
+            else if (roll < yellowP + purpleP + blueP && coloredUpgrade.ordinal() >= ColorTier.BLUE.ordinal())
+                spawnType = ID.BLUE_PAPERCLIP;
+            else if (roll < yellowP + purpleP + blueP + greenP && coloredUpgrade.ordinal() >= ColorTier.GREEN.ordinal())
+                spawnType = ID.GREEN_PAPERCLIP;
+            else if (roll < yellowP + purpleP + blueP + greenP + redP
+                    && coloredUpgrade.ordinal() >= ColorTier.RED.ordinal())
+                spawnType = ID.RED_PAPERCLIP;
+            else
+                spawnType = ID.PAPERCLIP;
+
+            // --- Random position within safe bounds ---
+            int spawnX = spawnMinX + random.nextInt(Math.max(1, spawnMaxX - spawnMinX));
+            int spawnY = spawnMinY + random.nextInt(Math.max(1, spawnMaxY - spawnMinY));
+
+            // --- Spawn the paperclip ---
+            spawner.spawnClip(spawnType, spawnX, spawnY, windowScaleX, windowScaleY);
 
             currentClipCount++;
         }
     }
 
+
     // --- Getters / setters for saving ---
-    public int getClips() { return clips; }
-    public void setClips(int clips) { this.clips = clips; }
+    public int getClips() {
+        return clips;
+    }
 
-    public int getCurrentClipCount() { return currentClipCount; }
-    public void setCurrentClipCount(int count) { this.currentClipCount = count; }
+    public void setClips(int clips) {
+        this.clips = clips;
+    }
 
-    public int getMaxClipCount() { return maxClipCount; }
-    public void setMaxClipCount(int maxClipCount) { this.maxClipCount = maxClipCount; }
+    public int getCurrentClipCount() {
+        return currentClipCount;
+    }
 
-    public ColorTier getColoredUpgrade() { return coloredUpgrade; }
-    public void setColoredUpgrade(ColorTier coloredUpgrade) { this.coloredUpgrade = coloredUpgrade; }
+    public void setCurrentClipCount(int count) {
+        this.currentClipCount = count;
+    }
 
-    public int getValueUpgradeCount() { return valueUpgradeCount; }
-    public void setValueUpgradeCount(int count) { this.valueUpgradeCount = count; }
+    public int getMaxClipCount() {
+        return maxClipCount;
+    }
 
-    public int getMoreUpgradeCount() { return moreUpgradeCount; }
-    public void setMoreUpgradeCount(int count) { this.moreUpgradeCount = count; }
+    public void setMaxClipCount(int maxClipCount) {
+        this.maxClipCount = maxClipCount;
+    }
 
-    public Handler getHandler() { return handler; }
-    public ConfigManager getConfig() { return config; }
-    public GameState getState() { return state; }
+    public ColorTier getColoredUpgrade() {
+        return coloredUpgrade;
+    }
+
+    public void setColoredUpgrade(ColorTier coloredUpgrade) {
+        this.coloredUpgrade = coloredUpgrade;
+    }
+
+    public int getValueUpgradeCount() {
+        return valueUpgradeCount;
+    }
+
+    public void setValueUpgradeCount(int count) {
+        this.valueUpgradeCount = count;
+    }
+
+    public int getMoreUpgradeCount() {
+        return moreUpgradeCount;
+    }
+
+    public void setMoreUpgradeCount(int count) {
+        this.moreUpgradeCount = count;
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    public ConfigManager getConfig() {
+        return config;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
     public void setState(GameState state) {
         this.state = state;
-        if (state == GameState.MENU) showMenuButtons();
-        else hideMenuButtons();
+        if (state == GameState.MENU)
+            showMenuButtons();
+        else
+            hideMenuButtons();
+    }
+
+    public float getWindowScaleX() {
+        return windowScaleX;
+    }
+
+    public float getWindowScaleY() {
+        return windowScaleY;
     }
 }

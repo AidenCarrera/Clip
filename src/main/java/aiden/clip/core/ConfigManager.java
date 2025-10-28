@@ -36,6 +36,7 @@ public class ConfigManager {
     public boolean debugMode;
     public int clickTolerance;
 
+    public double clipSize;
     public int paperclipBaseValue;
     public double basicPaperclipWeight;
     public double redSpawnWeight;
@@ -87,6 +88,7 @@ public class ConfigManager {
     }
 
     public static class PaperclipsConfig {
+        public double clipSize = 1.0;
         public int baseValue = 1;
         public double rareSpawnChance = 0.05;
         public ColorSpawnWeights colorSpawnWeights = new ColorSpawnWeights();
@@ -159,6 +161,7 @@ public class ConfigManager {
         debugMode = data.system.debugMode;
         clickTolerance = data.system.clickTolerance;
 
+        clipSize = data.paperclips.clipSize;
         paperclipBaseValue = data.paperclips.baseValue;
         basicPaperclipWeight = data.paperclips.colorSpawnWeights.basic;
         redSpawnWeight = data.paperclips.colorSpawnWeights.red;

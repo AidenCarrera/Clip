@@ -29,6 +29,7 @@
     "clickTolerance": 100
   },
   "paperclips": {
+    "clipSize": 1.25,
     "baseValue": 1,
     "rareSpawnChance": 0.05,
     "colorSpawnWeights": {

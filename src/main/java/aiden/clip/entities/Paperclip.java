@@ -1,11 +1,9 @@
 package aiden.clip.entities;
 
 import javax.swing.*;
-
 import aiden.clip.core.ConfigManager;
 import aiden.clip.core.GameObject;
 import aiden.clip.core.ID;
-
 import java.awt.*;
 import java.util.Objects;
 
@@ -27,21 +25,36 @@ public class Paperclip extends GameObject {
     private static final Image YELLOW_PAPERCLIP = new ImageIcon(
             Objects.requireNonNull(Paperclip.class.getResource("/images/yellowPaperclip.png"))).getImage();
 
-    public Paperclip(int x, int y, ID id, ConfigManager config) {
+    /**
+     * @param x      X position
+     * @param y      Y position
+     * @param id     Paperclip type
+     * @param config Config manager
+     * @param scaleX Horizontal scale factor
+     * @param scaleY Vertical scale factor
+     */
+    public Paperclip(int x, int y, ID id, ConfigManager config, double scaleX, double scaleY) {
         super(x, y, id, config);
+
         Image img = getImageForID();
-        width = img.getWidth(null);
-        height = img.getHeight(null);
+
+        // Apply resolution scaling + optional clip size multiplier
+        double finalScaleX = scaleX * config.clipSize;
+        double finalScaleY = scaleY * config.clipSize;
+
+        width = (int) (img.getWidth(null) * finalScaleX);
+        height = (int) (img.getHeight(null) * finalScaleY);
     }
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
 
-    public void tick() {}
+    public void tick() {
+    }
 
     public void render(Graphics g) {
-        g.drawImage(getImageForID(), x, y, null);
+        g.drawImage(getImageForID(), x, y, width, height, null);
     }
 
     private Image getImageForID() {
@@ -56,9 +69,18 @@ public class Paperclip extends GameObject {
         };
     }
 
-    public int getWidth() { return width; }
+    public int getWidth() {
+        return width;
+    }
 
     public int getHeight() {
         return height;
+    }
+    
+    public static Dimension getScaledSize(ConfigManager config, double scaleX, double scaleY) {
+        Image img = PAPERCLIP; // use base paperclip image
+        int width = (int) (img.getWidth(null) * scaleX * config.clipSize);
+        int height = (int) (img.getHeight(null) * scaleY * config.clipSize);
+        return new Dimension(width, height);
     }
 }

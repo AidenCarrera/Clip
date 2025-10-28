@@ -1,7 +1,6 @@
 package aiden.clip.entities;
 
 import java.util.Random;
-
 import aiden.clip.core.ConfigManager;
 import aiden.clip.core.Handler;
 import aiden.clip.core.ID;
@@ -18,22 +17,22 @@ public class Spawner {
     }
 
     /**
-     * Spawn a single paperclip at a random location using config-based bounds.
+     * Spawn a single paperclip at a specific location.
      */
-    public void spawnClip(ID id) {
-        int marginX = (int) (config.displayWidth * 0.1);  // 10% horizontal margin
-        int marginY = (int) (config.displayHeight * 0.1); // 10% vertical margin
-
-        int x = random.nextInt(config.displayWidth - 2 * marginX) + marginX;
-        int y = random.nextInt(config.displayHeight - 2 * marginY) + marginY;
-
-        handler.addObject(new Paperclip(x, y, id, config));
+    public void spawnClip(ID id, int x, int y, float windowScaleX, float windowScaleY) {
+        handler.addObject(new Paperclip(x, y, id, config, windowScaleX, windowScaleY));
     }
 
     /**
-     * Spawn multiple paperclips of the same type.
+     * Spawn multiple paperclips at random locations.
+     * This method can optionally be removed if all spawning is now handled by
+     * GameManager.
      */
-    public void spawnClips(ID id, int count) {
-        for (int i = 0; i < count; i++) spawnClip(id);
+    public void spawnClips(ID id, int count, int minX, int minY, int maxX, int maxY, float windowScaleX, float windowScaleY) {
+        for (int i = 0; i < count; i++) {
+            int x = minX + random.nextInt(Math.max(1, maxX - minX));
+            int y = minY + random.nextInt(Math.max(1, maxY - minY));
+            spawnClip(id, x, y, windowScaleX, windowScaleY);
+        }
     }
 }
